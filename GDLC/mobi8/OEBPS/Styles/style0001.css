@@ -1,0 +1,581 @@
+.asang {
+    display: block;
+    text-align: justify;
+    text-indent: 0;
+    margin: 0
+    }
+.asang1 {
+    display: block;
+    font-size: 0.77778em;
+    line-height: 1.2;
+    text-indent: 0
+    }
+.asang2 {
+    display: block;
+    font-size: 1.125em;
+    line-height: 1.2;
+    padding-left: 0;
+    padding-right: 0;
+    text-indent: 0;
+    margin: 0 5pt
+    }
+.calibre {
+    display: block;
+    font-size: 1.125em;
+    line-height: 1.2;
+    padding-left: 0;
+    padding-right: 0;
+    margin: 0 5pt
+    }
+.calibre1 {
+    font-family: "Helvetica Neue", Helvetica, Verdana, Arial, "Trebuchet MS", Trebuchet, sans-serif;
+    font-weight: bold;
+    margin-top: 0.5em;
+    text-indent: 0
+    }
+.calibre2 {
+    font-size: 0.77778em;
+    line-height: 1.2
+    }
+.calibre3 {
+    font-family: "Helvetica Neue", Helvetica, Verdana, Arial, "Trebuchet MS", Trebuchet, sans-serif;
+    font-style: italic;
+    margin-top: 0.5em;
+    text-indent: 0
+    }
+.calibre4 {
+    display: block;
+    list-style-type: disc;
+    margin: 1em 0
+    }
+.calibre5 {
+    display: list-item;
+    line-height: 1.3em;
+    text-align: justify;
+    margin: 0
+    }
+.calibre6 {
+    display: block;
+    font-family: "Helvetica Neue", Helvetica, Verdana, Arial, "Trebuchet MS", Trebuchet, sans-serif;
+    text-align: justify;
+    text-indent: 0;
+    margin: 0.5em 0 0
+    }
+.calibre7 {
+    display: inline-block;
+    width: 8em;
+    margin: 3em 0 2.5em;
+    padding: 0;
+    border: currentColor none 0
+    }
+.calibre8 {
+    height: auto;
+    width: 100%
+    }
+.calibre9 {
+    height: auto;
+    width: auto
+    }
+.calibre10 {
+    display: block;
+    text-align: left;
+    text-indent: 0;
+    margin: 0
+    }
+.calibre11 {
+    font-style: italic
+    }
+.calibre12 {
+    -moz-hyphens: none;
+    -webkit-hyphens: none;
+    adobe-hyphenate: none;
+    color: #233d94;
+    display: block;
+    font-size: 1.22222em;
+    font-weight: bold;
+    hyphenate: none;
+    hyphens: none;
+    line-height: 1.2;
+    page-break-after: avoid;
+    page-break-inside: avoid;
+    text-align: left;
+    text-indent: 0;
+    margin: 25% 0 0.67em
+    }
+.calibre13 {
+    font-weight: bold
+    }
+.calibre14 {
+    font-family: monospace
+    }
+.calibre15 {
+    display: block;
+    text-align: justify;
+    text-indent: 1.5em;
+    margin: 0
+    }
+.calibre16 {
+    display: block;
+    list-style-type: decimal;
+    margin: 1em 0
+    }
+.calibre17 {
+    text-decoration: none
+    }
+.calibre18 {
+    display: block;
+    list-style-type: decimal;
+    margin: 0
+    }
+.calibre19 {
+    font-size: 0.85714em;
+    line-height: 1.2;
+    vertical-align: super
+    }
+.calibre20 {
+    -moz-hyphens: none;
+    -webkit-hyphens: none;
+    adobe-hyphenate: none;
+    color: #233d94;
+    display: block;
+    font-size: 1.11111em;
+    font-weight: bold;
+    hyphenate: none;
+    hyphens: none;
+    line-height: 1.2;
+    page-break-after: avoid;
+    page-break-inside: avoid;
+    text-align: left;
+    text-indent: 0;
+    margin: 2em 0 1em
+    }
+.calibre21 {
+    -moz-hyphens: none;
+    -webkit-hyphens: none;
+    adobe-hyphenate: none;
+    color: #233d94;
+    display: block;
+    font-size: 1.22222em;
+    font-weight: bold;
+    hyphenate: none;
+    hyphens: none;
+    line-height: 1.2;
+    page-break-after: avoid;
+    page-break-inside: avoid;
+    text-align: left;
+    text-indent: 0;
+    margin: 25% 0 0.83em
+    }
+.calibre22 {
+    color: #233d94;
+    font-family: serif
+    }
+.calibre23 {
+    font-size: 0.77778em;
+    line-height: 1.2;
+    vertical-align: super
+    }
+.calibre24 {
+    font-style: italic;
+    padding-right: 0.1em
+    }
+.calibre25 {
+    font-size: 0.75em;
+    line-height: 1.2;
+    vertical-align: super
+    }
+.calibre26 {
+    display: block;
+    list-style-type: circle;
+    margin: 0
+    }
+.calibre27 {
+    display: block;
+    font-size: 0.88889em;
+    line-height: 1.2;
+    padding-top: 0.3em;
+    page-break-inside: avoid;
+    margin: 2em 0 1em;
+    border-top: #cde groove 2px
+    }
+.calibre28 {
+    display: table-row;
+    vertical-align: middle
+    }
+.calibre29 {
+    display: table-cell;
+    text-align: inherit;
+    vertical-align: inherit;
+    padding: 1px
+    }
+.calibre30 {
+    border-collapse: separate;
+    border-spacing: 2px;
+    display: table;
+    margin-bottom: 0;
+    margin-top: 0;
+    text-indent: 0
+    }
+.calibre31 {
+    display: block;
+    text-align: center;
+    text-indent: 0;
+    margin: 0
+    }
+.calibre32 {
+    font-size: 1em;
+    line-height: 1.2;
+    vertical-align: super
+    }
+.calibre33 {
+    background-color: #eee;
+    color: #233d94;
+    font-family: serif;
+    font-size: 0.875em;
+    font-weight: bold;
+    line-height: 1.2
+    }
+.calibre34 {
+    color: #233d94;
+    font-family: serif;
+    font-size: 1em;
+    font-weight: bold;
+    padding-right: 0.4em
+    }
+.calibre35 {
+    font-size: 0.75em;
+    line-height: 1.2;
+    vertical-align: sub
+    }
+.calibre36 {
+    display: block;
+    height: 40%
+    }
+.calibre37 {
+    height: 100%;
+    width: auto
+    }
+.centrat {
+    display: block;
+    margin-top: 15%;
+    text-align: center;
+    text-indent: 0
+    }
+.centrat1 {
+    -moz-hyphens: none;
+    -webkit-hyphens: none;
+    adobe-hyphenate: none;
+    color: #233d94;
+    display: block;
+    font-size: 1.22222em;
+    font-weight: bold;
+    hyphenate: none;
+    hyphens: none;
+    line-height: 1.2;
+    page-break-after: avoid;
+    page-break-inside: avoid;
+    text-align: center;
+    text-indent: 0;
+    margin: 25% 0 0.67em
+    }
+.centrat2 {
+    -moz-hyphens: none;
+    -webkit-hyphens: none;
+    adobe-hyphenate: none;
+    color: #233d94;
+    display: block;
+    font-size: 1.22222em;
+    font-weight: bold;
+    hyphenate: none;
+    hyphens: none;
+    line-height: 1.2;
+    page-break-after: avoid;
+    page-break-inside: avoid;
+    text-align: center;
+    text-indent: 0;
+    margin: 25% 0 0.83em
+    }
+.cita {
+    display: block;
+    font-size: 0.88889em;
+    line-height: 1.2;
+    padding-top: 0;
+    page-break-inside: avoid;
+    margin: 1.5em 1.5em 1.5em 4em;
+    border-top: currentColor none medium
+    }
+.df {
+    display: block;
+    font-size: 1.125em;
+    line-height: 1.2;
+    text-align: justify;
+    text-indent: -1em;
+    margin: 0 0 0 1em
+    }
+.ex {
+    color: #333;
+    font-style: italic;
+    padding-right: 0.1em
+    }
+.ilustrautor {
+    display: block;
+    text-align: center;
+    text-indent: 0;
+    margin: 1.5em
+    }
+.info {
+    display: block;
+    font-size: 0.77778em;
+    line-height: 1.2;
+    width: 90%;
+    margin: 5em 1.5em 0
+    }
+.n {
+    color: #e22;
+    font-weight: bold
+    }
+.n1 {
+    color: #e22;
+    font-style: italic;
+    padding-right: 0.1em
+    }
+.n2 {
+    color: #e22;
+    font-style: italic
+    }
+.ocult {
+    -moz-hyphens: none;
+    -webkit-hyphens: none;
+    adobe-hyphenate: none;
+    color: #233d94;
+    display: none;
+    font-size: 1.22222em;
+    font-weight: bold;
+    hyphenate: none;
+    hyphens: none;
+    line-height: 1.2;
+    page-break-after: avoid;
+    page-break-inside: avoid;
+    text-align: left;
+    text-indent: 0;
+    visibility: hidden;
+    margin: 25% 0 0.67em
+    }
+.p {
+    display: block;
+    text-align: justify;
+    text-indent: -1em;
+    margin: 0.5em 0 0 2em
+    }
+.p1 {
+    display: block;
+    text-align: justify;
+    text-indent: -1em;
+    margin: 0.5em 0 0 3em
+    }
+.pc {
+    display: block;
+    font-size: 0.75em;
+    text-align: justify;
+    text-indent: -1em;
+    margin: 0.5em 0 0 3em
+    }
+.ps {
+    display: block;
+    font-size: 0.875em;
+    line-height: 1.2;
+    text-align: justify;
+    text-indent: -1em;
+    margin: 0.5em 0 0 1em
+    }
+.rf {
+    color: #888;
+    display: block;
+    font-size: 0.75em;
+    text-align: right;
+    text-indent: 0;
+    margin: 0;
+    padding: 0
+    }
+.salt {
+    display: block;
+    font-family: "Helvetica Neue", Helvetica, Verdana, Arial, "Trebuchet MS", Trebuchet, sans-serif;
+    padding-top: 1em;
+    text-align: justify;
+    text-indent: 0;
+    margin: 0.5em 0 0
+    }
+.salt1 {
+    display: block;
+    padding-top: 2.5em;
+    text-align: center;
+    text-indent: 0;
+    margin: 0
+    }
+.salt2 {
+    display: block;
+    padding-top: 1em;
+    text-align: left;
+    text-indent: 0;
+    margin: 0
+    }
+.salt3 {
+    display: block;
+    padding-top: 1em;
+    text-align: justify;
+    text-indent: 1.5em;
+    margin: 0
+    }
+.salt4 {
+    display: block;
+    padding-top: 0.5em;
+    text-align: justify;
+    text-indent: 1.5em;
+    margin: 0
+    }
+.salt5 {
+    border-collapse: separate;
+    border-spacing: 2px;
+    display: table;
+    margin-bottom: 0;
+    margin-top: 0;
+    padding-top: 1em;
+    text-indent: 0
+    }
+.salt6 {
+    display: block;
+    padding-top: 1em;
+    text-align: center;
+    text-indent: 0;
+    margin: 0
+    }
+.salt10p {
+    display: block;
+    font-size: 0.88889em;
+    line-height: 1.2;
+    padding-top: 0.3em;
+    page-break-inside: avoid;
+    margin: 10% 0 1em;
+    border-top: #cde groove 2px
+    }
+.sans {
+    font-family: sans-serif;
+    line-height: 1.2
+    }
+.sans1 {
+    font-family: sans-serif;
+    font-weight: bold;
+    line-height: 1.2
+    }
+.sans2 {
+    font-family: sans-serif;
+    font-weight: bold
+    }
+.sans3 {
+    font-family: sans-serif;
+    font-size: 0.85714em;
+    font-weight: bold
+    }
+.sinopsi {
+    display: block;
+    font-family: "Helvetica Neue", Helvetica, Verdana, Arial, "Trebuchet MS", Trebuchet, sans-serif;
+    margin-top: 0.5em;
+    text-indent: 0
+    }
+.tautor {
+    -moz-hyphens: none;
+    -webkit-hyphens: none;
+    adobe-hyphenate: none;
+    color: #595959;
+    display: block;
+    font-size: 1.11111em;
+    hyphenate: none;
+    hyphens: none;
+    line-height: 1.2;
+    text-align: center;
+    text-indent: 0;
+    margin: 0 0 0.5em
+    }
+.tc {
+    display: block;
+    text-align: justify;
+    text-indent: -1em;
+    margin: 0.9em 0 0 2em
+    }
+.tdata {
+    color: #595959;
+    font-family: sans-serif;
+    font-size: 0.85714em
+    }
+.tfirma {
+    -moz-hyphens: none;
+    -webkit-hyphens: none;
+    adobe-hyphenate: none;
+    display: block;
+    font-size: 0.77778em;
+    hyphenate: none;
+    hyphens: none;
+    line-height: 1.2;
+    text-align: center;
+    text-indent: 0;
+    margin: 0
+    }
+.tlogo {
+    -moz-hyphens: none;
+    -webkit-hyphens: none;
+    adobe-hyphenate: none;
+    display: block;
+    hyphenate: none;
+    hyphens: none;
+    text-align: center;
+    text-indent: 0;
+    margin: 0
+    }
+.trevisio {
+    -moz-hyphens: none;
+    -webkit-hyphens: none;
+    adobe-hyphenate: none;
+    color: #595959;
+    display: block;
+    font-size: 0.77778em;
+    hyphenate: none;
+    hyphens: none;
+    line-height: 1.2;
+    text-align: center;
+    text-indent: 0;
+    margin: 2.5em 0 0
+    }
+.ttitol {
+    -moz-hyphens: none;
+    -webkit-hyphens: none;
+    adobe-hyphenate: none;
+    color: #233d94;
+    display: block;
+    font-size: 1.33333em;
+    font-weight: bold;
+    hyphenate: none;
+    hyphens: none;
+    line-height: 1.2;
+    page-break-after: avoid;
+    page-break-before: avoid;
+    page-break-inside: avoid;
+    text-align: center;
+    text-indent: 0;
+    margin: 0
+    }
+.v {
+    color: green;
+    font-style: italic;
+    padding-right: 0.1em
+    }
+.v1 {
+    color: brown
+    }
+.v2 {
+    color: green;
+    font-style: italic
+    }
+.vctr {
+    color: #f80;
+    font-weight: bold
+    }
