@@ -48,3 +48,5 @@ tmp*.*
 *TODO*.*
 *to-do*.*
 *TO-DO*.*
+.sync.ffs_db
+.sync.ffs_db
