@@ -1,0 +1,2 @@
+# Gran-Diccionari-de-la-llengua-catalana-Kindle-Edition-
+Gran Diccionari de la llengua catalana (Kindle Edition): Python code to edit the commercial ebook into a look-up dictionary that may be associated with ebooks in the Catalan language. The original book may be purchased at https://www.amazon.com/Gran-Diccionari-Llengua-Catalana-Catalan-ebook/dp/B00DZWFUG4/ for less than 10 U.S. dollars (6 euros on amazon.es in 2020)
