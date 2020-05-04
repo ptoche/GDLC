@@ -1,6 +1,6 @@
 ## WARNING!
 
-May 2020: WORK IN PROGRESS. UNTESTED. INEFFICIENT CODE. PLEASE CONTACT ME BEFORE USE. 
+MAY 2020: WORK IN PROGRESS. UNTESTED. HORRIBLE CODE. 
 
 ## Overview
 
@@ -20,8 +20,8 @@ Python code to edit an ebook dictionary into a Kindle lookup dictionary that may
 
 ## Installation
 
-You must be able to run Python 3 code and the BeautifulSoup library (https://pypi.org/project/beautifulsoup4/). As the files to be processed are large and the content proprietary, online emulators may not be the appropriate tool. You must have a copy of the dictionary. A free sample may be found inside the GDLC directory. 
+You must be able to run Python 3 code and the BeautifulSoup library. As the files to be processed are large and the content proprietary, online emulators may not be the appropriate tool. You must have a copy of the dictionary. A free sample may be found inside the GDLC directory. 
 
 ## Getting Help
 
-File an issue and let's see if I can help. 
+File an issue and let's see if I can help. Let me know if you can contribute. Do you already have a Catalan Lookup dictionary? Let me know! You're looking for one? Let me know. 
