@@ -50,3 +50,4 @@ tmp*.*
 *TO-DO*.*
 .sync.ffs_db
 .sync.ffs_db
+*.ffs_db
