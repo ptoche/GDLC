@@ -8,7 +8,7 @@ Created 3 May 2020
 Tests for the main function
 """
 
-# Test 1: prototypical case
+# Test 1: Output similar to Real Acadamia Española azw format
 source = """
 <blockquote class="calibre27">
     <p class="rf">-&gt;AAA<sup class="calibre32">1</sup></p>
@@ -20,10 +20,23 @@ source = """
 """
 print(dictionarize(source, verbose=True))
 
-# must work even if class="ps" missing, if class="df" missing, if class="rf" missing
+
+# Test 2: Output similar to Real Acadamia Española mobi format (class + id suppressed)
+source = """
+<blockquote class="calibre27">
+    <p class="rf">-&gt;AAA<sup class="calibre32">1</sup></p>
+    <p class="df"><code class="calibre22"><sup class="calibre23">■</sup><strong class="calibre13">AAA -bb</strong></code><sup class="calibre23">1</sup></p>
+    <p class="ps">Definition here.</p>
+    <p class="p">More details here.</p>
+    <p class="p">Even more details here.</p>
+  </blockquote>
+"""
+print(dictionarize(source, clean=True))
 
 
-# Test 2: an incomplete definition: missing class="rf"
+# Just in case: must work even if class="ps" missing, if class="df" missing, if class="rf" missing
+
+# Test 3: an incomplete definition: missing class="rf"
 test = """
   <blockquote class="calibre27">
     <p class="df"><code class="calibre22"><sup class="calibre23">■</sup><strong class="calibre13">AAA -bb</strong></code><sup class="calibre23">1</sup></p>
@@ -35,7 +48,7 @@ test = """
 print(dictionarize(test))
 
 
-# Test 3: an incomplete definition: missing class="df"
+# Test 4: an incomplete definition: missing class="df"
 test = """
   <blockquote class="calibre27">
     <p class="rf">-&gt;AAA<sup class="calibre32">1</sup></p>
@@ -47,7 +60,7 @@ test = """
 print(dictionarize(test))
 
 
-# Test 4: an incomplete definition: missing class="ps" and class="p"
+# Test 5: an incomplete definition: missing class="ps" and class="p"
 test = """
   <blockquote class="calibre27">
     <p class="rf">-&gt;AAA<sup class="calibre32">1</sup></p>
@@ -56,7 +69,7 @@ test = """
 print(dictionarize(test))
 
 
-# Test 5: A dictionary entry with weird stuff
+# Test 6: A dictionary entry with weird stuff
 test = """
   <blockquote class="calibre27">
     <p class="rf">-&gt;abonar<sup class="calibre32">2</sup></p>
@@ -109,7 +122,7 @@ test = """
 print(dictionarize(test))
 
 
-# Test 6: A definition with unnecessary forward slash
+# Test 7: A definition with unnecessary forward slash
 test = """
   <blockquote class="calibre27">
     <p class="rf">-&gt;a/</p>
@@ -119,13 +132,13 @@ test = """
     <p class="p"><em class="v">abrev</em> <strong class="calibre13">a l’atenció de.</strong></p>
   </blockquote>
 """
-print(dictionarize(test, pretty=True))
+print(dictionarize(test))
 
 
 
-# Test: Import html file
+# Test 8: Import html file
 import os
-base = os.path.join(os.path.sep, 'Users', 'PatrickToche', 'KindleDict', 'github','Python','tests')
+base = os.path.join(os.path.sep, 'Users', 'PatrickToche', 'KindleDict', 'GDLC-Kindle-Lookup', 'Python', 'tests')
 name0 = 'test4.html'
 name1 = 'junk.html'
 with open(os.path.join(base, name0)) as infile, open(os.path.join(base, name1), 'w') as outfile:
@@ -142,3 +155,4 @@ with open(os.path.join(base, name0)) as infile, open(os.path.join(base, name1), 
         h = '<?xml version="1.0" encoding="utf-8"?>'
         s = s.replace(h, '')
         outfile.write(s)
+

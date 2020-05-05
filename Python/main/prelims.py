@@ -1,5 +1,29 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Preliminary Explorations
+"""
 
-# Preliminary 
+# List all tags present in source file
+# for every file in the list, look only at the body
+def list_tags(filelist):
+    tags = set()
+    for file in filelist:
+        with open(file) as infile:
+            soup = BeautifulSoup(infile)
+            c = set(tag.name for tag in soup.find_all())
+            for item in c:
+                if item not in tags:
+                    tags.add(item)
+    return tags
+
+filelist = make_names(filepath)
+tags = list_tags(filelist)
+print(tags, end = ', ')
+## {'h2', 'a', 'ul', 'img', 'p', 'div', 'sup', 'span', 'strong', 'title', 'table', 'blockquote', 'li', 'h1', 'td', 'head', 'tr', 'sub', 'html', 'meta', 'h3', 'body', 'ol', 'em', 'link', 'small', 'code'}.
+## h1, h2, h3
+
+
 # Find all instances of classes for <p> tags
 # keep outside the main loop to reduce overhead
 import os

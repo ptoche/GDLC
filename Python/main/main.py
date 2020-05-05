@@ -8,20 +8,20 @@ Created 3 May 2020
 Main function to edit the xhtml source code for the GDLC (Kindle edition).
 """
 
-# Make sure you have the appropriate parser libraries installed, e.g.
-# conda install html5lib or pip install lxml, etc.
-
+import os
+import re
 from bs4 import BeautifulSoup, Tag
 
-def dictionarize(item, verbose=False, pretty=False):
+
+def dictionarize(item, verbose=False, clean=False):
     """docstring"""
-    # type checks
-    if not isinstance(item, (BeautifulSoup, Tag)):
+    try:
         #soup = BeautifulSoup(item, 'html.parser')
         soup = BeautifulSoup(item, 'xml')  # revert to html.parser if problem
-    else:
-        soup = item
-    # input is intended to be a string, but allows BeautifulSoup and Tag 
+    except Exception as ex:
+        print("Warning: function expects a string.\n\n")
+        er = RuntimeError("An exception was raised!")
+        raise er from ex
     if verbose:
         print('No. children:   ', len(list(soup.children)))
         print('\n', list(soup.children))
@@ -37,22 +37,23 @@ def dictionarize(item, verbose=False, pretty=False):
     p = soup.find_all('p', attrs={'class':'df'})
     if not p:
         return ''
-    # delete all '<a href' tags
-    for a in soup.find_all('a'):
-        a.replaceWithChildren()
-    # delete all id tags:
-    for i in soup.find_all('id'):        
-        i.replaceWithChildren()
-    # delete all classes associated with <strong>:
-    for strong in soup.find_all('strong'):
-        del strong.attrs['class']
-    # delete all classes associated with <em>:
-    for em in soup.find_all('em'):
-        del em.attrs['class']
-    # delete all classes associated with <sup>:
-    for sup in soup.find_all('sup'):
-        del sup.attrs['class']        
-    # Remove special character <sup>■</sup>
+    if clean:
+        # delete all '<a href' tags
+        for a in soup.find_all('a'):
+            a.replaceWithChildren()
+        # delete all id tags:
+        for i in soup.find_all('id'):        
+            i.replaceWithChildren()
+        # delete all classes associated with <strong>:
+        for strong in soup.find_all('strong'):
+            del strong.attrs['class']
+        # delete all classes associated with <em>:
+        for em in soup.find_all('em'):
+            del em.attrs['class']
+        # delete all classes associated with <sup>:
+        for sup in soup.find_all('sup'):
+            del sup.attrs['class']
+    # Always remove special character <sup>■</sup>
     for x in soup.find_all('sup'):
         if '■' in x.get_text():
             x.extract()
@@ -105,18 +106,21 @@ def dictionarize(item, verbose=False, pretty=False):
     for b in s.find_all('blockquote'):
         b.unwrap() 
     for p in s.find_all('p', attrs={'class':['ps','p','p1','pc','tc']}):
-        if 'class' in p.attrs:
-            del p.attrs['class']
+        if clean:
+            if 'class' in p.attrs:
+                del p.attrs['class']
         p.wrap(s.new_tag('blockquote'))
         p.wrap(s.new_tag('span'))
         p.unwrap()
-    for b in s.find_all('blockquote'):
-        b.attrs['align'] = 'left'
-    # clean all tags inside word definitions:
-    for t in s.find_all(class_=True):
-        del t.attrs['class']
+    if clean:
+        # align all blockquote groups to left 
+        for b in s.find_all('blockquote'):
+            b.attrs['align'] = 'left'
+        # clean all tags inside word definitions:
+        for t in s.find_all(class_=True):
+            del t.attrs['class']
     s = str(s)
-    s = s.strip('\n')
+    s = re.sub(r'\n+', '\n', s)
     if not s:
         s = 'Definition missing'
     s = '<div>'+s+'</div>'
@@ -126,30 +130,9 @@ def dictionarize(item, verbose=False, pretty=False):
     # remove unwanted header (introduced if using the xml parser)
     h = '<?xml version="1.0" encoding="utf-8"?>'
     s = s.replace(h, '')
-    s = BeautifulSoup(s, 'xml')  # features="xml" allows self-closing tags
-    if pretty:
-        s = s.prettify() 
     if verbose:
         print('Output below:\n')
     return s
 
+    
 
-# Import html file
-import os
-base = os.path.join(os.path.sep, 'Users', 'PatrickToche', 'KindleDict', 'GDLC-Kindle-Lookup','Python','tests')
-name0 = 'test4.html'
-name1 = 'junk.html'
-with open(os.path.join(base, name0)) as infile, open(os.path.join(base, name1), 'w') as outfile:
-    soup = BeautifulSoup(infile)
-    body = soup.find('body')
-    for h in body:
-        e = body.find('h2')
-        if e:
-            outfile.write(str(e))
-            e.decompose()
-    b = body.findChildren(recursive=False)
-    for x in b:
-        s = str(dictionarize(str(x)))
-        h = '<?xml version="1.0" encoding="utf-8"?>'
-        s = s.replace(h, '')
-        outfile.write(s)
