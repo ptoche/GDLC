@@ -12,24 +12,18 @@ import os
 import re
 from bs4 import BeautifulSoup, Tag
 
-
-def dictionarize(item, verbose=False, clean=False):
+def dictionarize(item, verbose=False, clean=False, parser='xml'):
     """
     Takes a well-formed block of html code and formats it to conform with the Kindle dictionary structure. Written for the 'Gran diccionari de la llengua catalana' published by Institut d'Estudis Catalans in 2013, purchased from Amazon for 6 euros and downloaded in the `mobi` format. After conversion to the `azw` format via the `Calibre` plugin `KindleUnpack` the dictionary entries appears as well-formed blocks of html code inside `blockquote` tags. The code loops through the blocks and formats them one at a time. The code below may hopefully be adapted to other dictionaries, but almost certainly will not work without alterations. My original plan was to make a lookup dictionary for Aranes and Occitan. I started with Catalan because I happen to own an electronic copy of the dictionary. I may never have time to do the same thing for other languages. The code has not been optimized and was written over two days without prior thoughts. It relies on the BeautifulSoup library, a library I had never used before. @author: Patrick Toche. 
     """
     try:
-        #soup = BeautifulSoup(item, 'html.parser')
-        soup = BeautifulSoup(item, 'xml')  # revert to html.parser if problem
+        soup = BeautifulSoup(item, parser=parser)
     except Exception as ex:
         print("Warning: function expects a string.\n\n")
         er = RuntimeError("An exception was raised!")
         raise er from ex
     if verbose:
-        print('No. children:   ', len(list(soup.children)))
-        print('\n', list(soup.children))
-        print('\nNo. descendants:', len(list(soup.descendants)))
-        print('\n', list(soup.descendants))
-        print('\n')
+        print_info(soup)
     # Step 0: clean and break down the problem into chunks
     s1, s2, s3 = '', '', ''
     # delete entries that lack classes 'rf' and/or 'df'
@@ -40,21 +34,7 @@ def dictionarize(item, verbose=False, clean=False):
     if not p:
         return ''
     if clean:
-        # delete all '<a href' tags
-        for a in soup.find_all('a'):
-            a.replaceWithChildren()
-        # delete all id tags:
-        for i in soup.find_all('id'):        
-            i.replaceWithChildren()
-        # delete all classes associated with <strong>:
-        for strong in soup.find_all('strong'):
-            del strong.attrs['class']
-        # delete all classes associated with <em>:
-        for em in soup.find_all('em'):
-            del em.attrs['class']
-        # delete all classes associated with <sup>:
-        for sup in soup.find_all('sup'):
-            del sup.attrs['class']
+        clean_tags(soup)
     # Always remove special character <sup>■</sup>
     for x in soup.find_all('sup'):
         if '■' in x.get_text():
@@ -129,22 +109,89 @@ def dictionarize(item, verbose=False, clean=False):
     s3 = s
     # Step 4:
     s = '<idx:entry scriptable="yes">' + '\n' + s1 + s2 + s3 + '\n' + '</idx:entry>'
-    # remove unwanted header (introduced if using the xml parser)
-    h = '<?xml version="1.0" encoding="utf-8"?>'
-    s = s.replace(h, '')
+    if parser == 'xml':
+        s = remove_header(s)
     if verbose:
-        print('Output below:\n')
+        print_output(s)
     return s
 
 
-def make_xml(frame, body):
+
+def print_info(soup):
     """
-    Inserts a body inside a piece of html/xml code
+    print information about children and descendents
     """
-    if not isinstance(body, BeautifulSoup):
-        body = BeautifulSoup(body)
-    if not isinstance(frame, BeautifulSoup):
-        frame = BeautifulSoup(frame)
-    xml = frame.insert(1, body)
-    return xml 
+    print('No. children:   ', len(list(soup.children)))
+    print('\n', list(soup.children))
+    print('\nNo. descendants:', len(list(soup.descendants)))
+    print('\n', list(soup.descendants))
+    print('\n')
+
+
+
+def print_output(s):
+    """
+    print output to screen (useful for debugging)
+    """
+    print('OUTPUT PRINTOUT:\n================\n', s, '\n================\n')
+
+
+
+def remove_header(xml):
+    """
+    remove unwanted header introduced when using the `xml` parser
+    using the re module to make case insensitive replacement
+    """
+    import re
+    h = re.escape('<?xml version="1.0" encoding="utf-8"?>') # re.escape ? and .
+    r = re.sub(h, '', xml, flags=re.IGNORECASE | re.MULTILINE)
+    return r
+
+
+
+def clean_tags(soup):
+    """
+    remove certain tags: '<a', 'id', 'class' from BeautifulSoup object
+    """
+    # delete all '<a href' tags
+    for a in soup.find_all('a'):
+        a.replaceWithChildren()
+    # delete all id tags:
+    for i in soup.find_all('id'):        
+        i.replaceWithChildren()
+    # delete all classes associated with <strong>:
+    for strong in soup.find_all('strong'):
+        del strong.attrs['class']
+    # delete all classes associated with <em>:
+    for em in soup.find_all('em'):
+        del em.attrs['class']
+    # delete all classes associated with <sup>:
+    for sup in soup.find_all('sup'):
+        del sup.attrs['class']
+    return(soup)
+
+
+
+def make_html(body, head, parser='xml'):
+    """
+    Inserts a body within the head in html/xml file.
+    Accepts strings.
+    """
+    body = BeautifulSoup(body, parser=parser)
+    head = BeautifulSoup(head, parser=parser)
+    htm = head.insert(1, body)
+    return htm
+
+
+
+def get_head(html, parser='xml'):
+    """
+    Extract the head from an html/xml file. 
+    Accepts a string. Outputs a string. 
+    """
+    html = BeautifulSoup(html, parser=parser)
+    body = html.find('body')
+    body.decompose()
+    html = str(html)
+    return html
 

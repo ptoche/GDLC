@@ -13,7 +13,8 @@ Make sure you have the appropriate parser libraries installed, e.g.
 
 import os
 import re
-from bs4 import BeautifulSoup, Tag
+from bs4 import BeautifulSoup
+
 
 # Step 1: List files to be processed
 def make_names(filepath, first=None, last=None):
@@ -45,45 +46,59 @@ def make_names(filepath, first=None, last=None):
     return r
 
 
-root = os.path.join(os.path.sep, 'Users', 'PatrickToche', 'KindleDict', 'GDLC-Kindle-Lookup', 'GDLC', 'mobi8', 'OEBPS', 'Text')
-filepath = os.path.join(os.path.sep, root, 'part0000.xhtml')
-
-make_names(filepath)
-make_names(filepath, last = 4)
-make_names(filepath, first = 2, last = 4)
-make_names(filepath, first = 275)
-
-
-
 # Step 2: Loop away
-def loop_away(filelist, outpath):
+def loop_away(filelist, outdir, verbose=False, clean=False, parser='xml'):
     print('In Progress...')
     for file in filelist:
         filename = os.path.basename(file)
-        outfile = os.path.join(outpath, filename)        
-        with open(file) as infile, open(outfile, 'w') as outfile:
-            soup = BeautifulSoup(infile)
+        outname = os.path.join(outdir, filename)
+        with open(file, encoding='utf8') as infile:
+            head = get_head(infile, parser=parser) # get_head destroys infile!
+                                                   # to be fixed...
+        with open(file) as infile, open(outname, 'w') as outfile:
+            soup = BeautifulSoup(infile, parser=parser)
             body = soup.find('body')
             b = body.findChildren(recursive=False)
+            if b:
+                print('debug: b is not None')
             for x in b:
                 h = x.find(['h1', 'h2', 'h3'])
                 if h:
+                    print('debug: h is not None') # Can't find h1, h2, h3 ?
+                #print('debug: h=', h)
+                if h:
+                    #print(str(h), file=outfile)
                     outfile.write(str(h))
                     h.decompose()
-                s = str(dictionarize(str(x)))
-                h = '<?xml version="1.0" encoding="utf-8"?>'
-                s = s.replace(h, '')
+                s = str(dictionarize(str(x), verbose=verbose, clean=clean, parser=parser))
+                if parser == 'xml':
+                    s = remove_header(s)
                 s = s+'\n\n'
+                #print(s, file=outfile)
                 outfile.write(s)
             print('■', end='', flush=True)
-            outfile.close()
+            ## IN PROGRESS
+            with open(outname, 'r+') as outfile:
+                text = outfile.read()
+                body2 = BeautifulSoup(text, parser=parser)
+                print('type of head:', type(head))
+                print('type of body:', type(body))
+                print('type of body2:', type(body2))
+                html = make_html(body=body2, head=head, parser=parser)
+                outfile.seek(0)
+                outfile.write(html) # PROBLEM HERE
+                outfile.truncate()
     print('\nEnd.')
     return s
- 
+
+# Make names and run loop
+indir = os.path.join(os.path.sep, 'Users', 'PatrickToche', 'KindleDict', 'GDLC-Kindle-Lookup', 'GDLC', 'mobi8', 'OEBPS', 'Text')
+outdir = os.path.join(os.path.sep, 'Users', 'PatrickToche', 'KindleDict', 'GDLC-Kindle-Lookup', 'Python', 'output')
+filepath = os.path.join(os.path.sep, indir, 'part0000.xhtml')
+make_names(filepath, last = 4)
+make_names(filepath, first = 2, last = 4)
+make_names(filepath, first = 275)
 filelist = make_names(filepath)
-outpath = os.path.join(os.path.sep, 'Users', 'PatrickToche', 'KindleDict', 'GDLC-Kindle-Lookup', 'Python', 'output')
-f = filelist[16:30]
-xml_str = loop_away(f, outpath)
-
-
+f = filelist[16:17]
+xml = loop_away(f, outdir)
 

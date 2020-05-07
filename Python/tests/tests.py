@@ -7,9 +7,8 @@ Created 3 May 2020
 
 Tests for the main function
 """
-
 # Test 1: Output similar to Real Acadamia Española azw format
-source = """
+test = """
 <blockquote class="calibre27">
     <p class="rf">-&gt;AAA<sup class="calibre32">1</sup></p>
     <p class="df"><code class="calibre22"><sup class="calibre23">■</sup><strong class="calibre13">AAA -bb</strong></code><sup class="calibre23">1</sup></p>
@@ -18,11 +17,11 @@ source = """
     <p class="p">Even more details here.</p>
   </blockquote>
 """
-print(dictionarize(source, verbose=True))
+print(dictionarize(test, verbose=True))
 
 
 # Test 2: Output similar to Real Acadamia Española mobi format (class + id suppressed)
-source = """
+test = """
 <blockquote class="calibre27">
     <p class="rf">-&gt;AAA<sup class="calibre32">1</sup></p>
     <p class="df"><code class="calibre22"><sup class="calibre23">■</sup><strong class="calibre13">AAA -bb</strong></code><sup class="calibre23">1</sup></p>
@@ -31,7 +30,7 @@ source = """
     <p class="p">Even more details here.</p>
   </blockquote>
 """
-print(dictionarize(source, clean=True))
+print(dictionarize(test, clean=True))
 
 
 # Just in case: must work even if class="ps" missing, if class="df" missing, if class="rf" missing
@@ -126,23 +125,59 @@ print(dictionarize(test))
 test = """
   <blockquote class="calibre27">
     <p class="rf">-&gt;a/</p>
-
     <p class="df"><code class="calibre22"><strong class="calibre13">a/</strong></code></p>
-
     <p class="p"><em class="v">abrev</em> <strong class="calibre13">a l’atenció de.</strong></p>
   </blockquote>
 """
 print(dictionarize(test))
 
 
+# Test 8: Using other parsers
+test = """
+<blockquote class="calibre27">
+    <p class="rf">-&gt;AAA<sup class="calibre32">1</sup></p>
+    <p class="df"><code class="calibre22"><sup class="calibre23">■</sup><strong class="calibre13">AAA -bb</strong></code><sup class="calibre23">1</sup></p>
+    <p class="ps">Definition here.</p>
+    <p class="p">More details here.</p>
+    <p class="p">Even more details here.</p>
+  </blockquote>
+"""
+print(dictionarize(test, parser='html.parser', clean=False))
+print(dictionarize(test, parser='lxml', clean=True))
+print(dictionarize(test, parser='html5lib', clean=True, verbose=True))
 
-# Test 8: Import html file
+
+# Test 9: Get head from html file
+test = """
+<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Unknown</title>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+    <link href="../Styles/style0001.css" rel="stylesheet" type="text/css"/>
+    <link href="../Styles/style0002.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<blockquote class="calibre27">
+    <p class="rf">-&gt;AAA<sup class="calibre32">1</sup></p>
+    <p class="df"><code class="calibre22"><sup class="calibre23">■</sup><strong class="calibre13">AAA -bb</strong></code><sup class="calibre23">1</sup></p>
+    <p class="ps">Definition here.</p>
+    <p class="p">More details here.</p>
+    <p class="p">Even more details here.</p>
+  </blockquote>
+</body>
+</html>
+"""
+print(get_head(test))
+print(get_head(test, parser='lxml'))
+
+
+# Test 10: Import html file
 import os
 base = os.path.join(os.path.sep, 'Users', 'PatrickToche', 'KindleDict', 'GDLC-Kindle-Lookup', 'Python', 'tests')
 name0 = 'test4.html'
 name1 = 'junk.html'
 with open(os.path.join(base, name0)) as infile, open(os.path.join(base, name1), 'w') as outfile:
-    soup = BeautifulSoup(infile)
+    soup = BeautifulSoup(infile, parser='xml')
     body = soup.find('body')
     for h in body:
         e = body.find('h2')
@@ -155,4 +190,3 @@ with open(os.path.join(base, name0)) as infile, open(os.path.join(base, name1), 
         h = '<?xml version="1.0" encoding="utf-8"?>'
         s = s.replace(h, '')
         outfile.write(s)
-
