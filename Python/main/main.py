@@ -5,7 +5,7 @@ Created 3 May 2020
 
 @author: patricktoche
 
-Main function to edit the xhtml source code for the GDLC (Kindle edition).
+Main functions to edit the xhtml source code for the GDLC (Kindle edition).
 """
 
 import os
@@ -14,7 +14,9 @@ from bs4 import BeautifulSoup, Tag
 
 
 def dictionarize(item, verbose=False, clean=False):
-    """docstring"""
+    """
+    Takes a well-formed block of html code and formats it to conform with the Kindle dictionary structure. Written for the 'Gran diccionari de la llengua catalana' published by Institut d'Estudis Catalans in 2013, purchased from Amazon for 6 euros and downloaded in the `mobi` format. After conversion to the `azw` format via the `Calibre` plugin `KindleUnpack` the dictionary entries appears as well-formed blocks of html code inside `blockquote` tags. The code loops through the blocks and formats them one at a time. The code below may hopefully be adapted to other dictionaries, but almost certainly will not work without alterations. My original plan was to make a lookup dictionary for Aranes and Occitan. I started with Catalan because I happen to own an electronic copy of the dictionary. I may never have time to do the same thing for other languages. The code has not been optimized and was written over two days without prior thoughts. It relies on the BeautifulSoup library, a library I had never used before. @author: Patrick Toche. 
+    """
     try:
         #soup = BeautifulSoup(item, 'html.parser')
         soup = BeautifulSoup(item, 'xml')  # revert to html.parser if problem
@@ -134,5 +136,15 @@ def dictionarize(item, verbose=False, clean=False):
         print('Output below:\n')
     return s
 
-    
+
+def make_xml(frame, body):
+    """
+    Inserts a body inside a piece of html/xml code
+    """
+    if not isinstance(body, BeautifulSoup):
+        body = BeautifulSoup(body)
+    if not isinstance(frame, BeautifulSoup):
+        frame = BeautifulSoup(frame)
+    xml = frame.insert(1, body)
+    return xml 
 
