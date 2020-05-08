@@ -51,45 +51,36 @@ def loop_away(filelist, outdir, verbose=False, clean=False, parser='xml'):
     print('In Progress...')
     for file in filelist:
         filename = os.path.basename(file)
-        outname = os.path.join(outdir, filename)
+        outpath = os.path.join(outdir, filename)
         with open(file, encoding='utf8') as infile:
-            head = get_head(infile, parser=parser) # get_head destroys infile!
-                                                   # to be fixed...
-        with open(file) as infile, open(outname, 'w') as outfile:
+            head = get_head(infile, parser=parser)
+        with open(file) as infile, open(outpath, 'w') as outfile:
             soup = BeautifulSoup(infile, parser=parser)
             body = soup.find('body')
-            b = body.findChildren(recursive=False)
-            if b:
-                print('debug: b is not None')
-            for x in b:
-                h = x.find(['h1', 'h2', 'h3'])
-                if h:
-                    print('debug: h is not None') # Can't find h1, h2, h3 ?
-                #print('debug: h=', h)
-                if h:
-                    #print(str(h), file=outfile)
-                    outfile.write(str(h))
-                    h.decompose()
-                s = str(dictionarize(str(x), verbose=verbose, clean=clean, parser=parser))
+            for line in body:
+                DEBUGGING
+                s = str(dictionarize(str(line), verbose=verbose, clean=clean, parser=parser))
+                # PROBLEM: dictionarize introduces body tag
                 if parser == 'xml':
                     s = remove_header(s)
-                s = s+'\n\n'
-                #print(s, file=outfile)
-                outfile.write(s)
+                s = s+'\n'
+                print(s, file=outfile)
+                #outfile.write(s)
             print('■', end='', flush=True)
-            ## IN PROGRESS
-            with open(outname, 'r+') as outfile:
-                text = outfile.read()
-                body2 = BeautifulSoup(text, parser=parser)
-                print('type of head:', type(head))
-                print('type of body:', type(body))
-                print('type of body2:', type(body2))
-                html = make_html(body=body2, head=head, parser=parser)
-                outfile.seek(0)
-                outfile.write(html) # PROBLEM HERE
-                outfile.truncate()
+        with open(outpath, 'r+') as outfile:
+            body = outfile.read()
+            return body, head
+            html = make_html(body=body, head=head, parser=parser)
+            print('debug: here I am')
+            print('debug: type(html) = ', type(html))
+            return None
+            outfile.seek(0)
+            outfile.write(html)
+            outfile.truncate()
     print('\nEnd.')
     return s
+
+
 
 # Make names and run loop
 indir = os.path.join(os.path.sep, 'Users', 'PatrickToche', 'KindleDict', 'GDLC-Kindle-Lookup', 'GDLC', 'mobi8', 'OEBPS', 'Text')

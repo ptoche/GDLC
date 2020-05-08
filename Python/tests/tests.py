@@ -7,6 +7,8 @@ Created 3 May 2020
 
 Tests for the main function
 """
+
+
 # Test 1: Output similar to Real Acadamia Española azw format
 test = """
 <blockquote class="calibre27">
@@ -121,7 +123,7 @@ test = """
 print(dictionarize(test))
 
 
-# Test 7: A definition with unnecessary forward slash
+# Test 7: A definition with unnecessary forward slash: TO DO: MAY NEED TO BE FIXED
 test = """
   <blockquote class="calibre27">
     <p class="rf">-&gt;a/</p>
