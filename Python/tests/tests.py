@@ -192,3 +192,4 @@ with open(os.path.join(base, name0)) as infile, open(os.path.join(base, name1), 
         h = '<?xml version="1.0" encoding="utf-8"?>'
         s = s.replace(h, '')
         outfile.write(s)
+

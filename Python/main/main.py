@@ -47,6 +47,7 @@ def trim_definition(item, verbose=False, clean=False, parser='xml'):
 
 
 
+
 def split_definition(soup, verbose=False, clean=False, parser='xml'):
     """
     Splits dictionary entry into three parts. 
@@ -54,15 +55,25 @@ def split_definition(soup, verbose=False, clean=False, parser='xml'):
     """
     # slice soup into chunks:
     s1, s2, s3 = '', '', '' 
-    for p in soup.find_all('p', attrs={'class':'rf'}):
-        s1 = soup.p.extract()
-    for p in soup.find_all('p', attrs={'class':'df'}):
-        s2 = soup.p.extract()
-    for p in soup.find_all('p', attrs={'class':['rf','df']}):
-        #p.decompose()
-        p.extract()
-    for p in soup.find_all('body'):
-        s3 = soup.p.extract()
+    # slice s1: word label for lookup
+    f = soup.find_all('p', attrs={'class':'rf'})
+    if f is not None:
+        for p in f:
+            s1 = soup.p.extract()
+    # slice s2: word long and short forms 
+    f = soup.find_all('p', attrs={'class':'df'})
+    if f is not None:
+        for p in f:
+            s2 = soup.p.extract()
+    # slice s3: word definition
+    f = soup.find_all('p', attrs={'class':['rf','df']})
+    if f is not None:
+        # remove p tags with classes rf and df 
+        for p in f:
+            #p.decompose()
+            p.extract()
+        # extract the body as BeautifulSoup object
+        s3 = soup.find('body')
     if verbose:
         print_types(s1, s2, s3)
     return s1, s2, s3
@@ -117,15 +128,22 @@ def make_definition(soup, verbose=False, clean=False):
     Extracts definition from dictionary entry.
     Accepts a BeautifulSoup object. Returns a string. 
     """
-    for b in soup.find_all('blockquote'):
-        b.unwrap()
-    for p in soup.find_all('p', attrs={'class':['ps','p','p1','pc','tc']}):
-        if clean:
-            if 'class' in p.attrs:
-                del p.attrs['class']
-        p.wrap(soup.new_tag('blockquote'))
-        p.wrap(soup.new_tag('span'))
-        p.unwrap()
+    f = soup.find_all('blockquote')
+    if f is not None:        
+        for b in f:
+            b.unwrap()
+    else:
+        print('Problem: definition not contained in a blockquote tag!')
+        soup.wrap(Tag(name="blockquote"))
+    f = soup.find_all('p', attrs={'class':['ps','p','p1','pc','tc']})
+    if f is not None:
+        for p in f:
+            if clean:
+                if 'class' in p.attrs:
+                    del p.attrs['class']
+            p.wrap(Tag(name="blockquote"))
+            p.wrap(Tag(name="span"))
+            p.unwrap()
     if clean:
         # align all blockquote groups to left 
         for b in soup.find_all('blockquote'):
@@ -144,12 +162,18 @@ def make_definition(soup, verbose=False, clean=False):
 
 def dictionarize(item, verbose=False, clean=False, parser='xml'):
     """
-    Takes a well-formed block of html code and formats it to conform with the Kindle dictionary structure. Written for the 'Gran diccionari de la llengua catalana' published by Institut d'Estudis Catalans in 2013, purchased from Amazon for 6 euros and downloaded in the `mobi` format. After conversion to the `azw` format via the `Calibre` plugin `KindleUnpack` the dictionary entries appears as well-formed blocks of html code inside `blockquote` tags. The code loops through the blocks and formats them one at a time. The code below may hopefully be adapted to other dictionaries, but almost certainly will not work without alterations. My original plan was to make a lookup dictionary for Aranes and Occitan. I started with Catalan because I happen to own an electronic copy of the dictionary. I may never have time to do the same thing for other languages. The code has not been optimized and was written over two days without prior thoughts. It relies on the BeautifulSoup library, a library I had never used before. @author: Patrick Toche. 
+    Takes a well-formed block of html code and formats it to conform with the Kindle dictionary structure. 
+    Written for the 'Gran diccionari de la llengua catalana' published by Institut d'Estudis Catalans in 2013, purchased from Amazon for 6 euros and downloaded in the `mobi` format. 
+    After conversion to the `azw` format via the `Calibre` plugin `KindleUnpack`, the dictionary entries appear as well-formed blocks of html code inside `blockquote` tags. 
+    The code loops through the blocks and formats them one at a time. 
+    The code below may hopefully be adapted to other dictionaries, but almost certainly will not work without alterations. 
+    My original plan was to make a lookup dictionary for Aranes and Occitan. I started with Catalan because I happen to own an electronic copy of the dictionary. I may never have time to do the same thing for other languages. 
+    The code has not been optimized and was written over two days without prior thoughts, refactored for another two days. The code relies on the BeautifulSoup library, a library I had never used before... 
+    Suggestions for improvement welcome!
+    @author: Patrick Toche. 
     """
     if verbose:
-        print('\n\nThe `verbose` flag has been set to `True`\n')
-        print('Summary of main function:\n')
-        print(dictionarize.__doc__, '\n')
+        print_summary(dictionarize.__doc__)
     # Trim & Clean dictionary entry:
     soup = trim_definition(item, verbose=verbose, clean=clean, parser=parser)
     # Emtpy or malformed definitions return None, return empty string if None
@@ -173,9 +197,22 @@ def dictionarize(item, verbose=False, clean=False, parser='xml'):
 
 
 
+def print_summary(docstring):
+    """
+    Prints a function docstring.
+    Returns None.
+    """
+    print('\n\nThe `verbose` flag has been set to `True`\n')
+    print('Summary of main function:\n')
+    print(docstring, '\n')
+    return None
+
+
+
 def print_children(soup):
     """
-    print information about children and descendents
+    Print information about all children and descendents.
+    Returns None.
     """
     print('Function trim_definition() creates a BeautifulSoup object from a string\n')
     print('Number of children and descendants of main soup object:\n')
@@ -190,9 +227,21 @@ def print_children(soup):
 
 
 
+def print_child_info(child):
+    """
+    Print information about each dictionary entry as a child of main soup.
+    Returns None.
+    """
+    print('child.name =', child.name)
+    print('child["class"]', child['class'])
+    return None
+
+
+
 def print_types(s1, s2, s3):
     """
-    print information about types. Accepts a tuple s1, s2, s3
+    Print information about types. Accepts a tuple s1, s2, s3
+    Returns None.
     """
     print('Function split_definition() outputs a tuple s1, s2, s3 of type:\n')
     print('type(s1) =', type(s1))
@@ -207,7 +256,8 @@ def print_types(s1, s2, s3):
         
 def print_output(s):
     """
-    print output to screen (useful for debugging)
+    Print output to screen (useful for debugging).
+    Returns None.
     """
     print('\n\nOUTPUT PRINTOUT:\n================\n', s, '\n================\n\n')
     return None
@@ -216,8 +266,9 @@ def print_output(s):
 
 def remove_header(xml):
     """
-    remove unwanted header introduced when using the `xml` parser
-    using the re module to make case insensitive replacement
+    Remove unwanted header introduced when using the `xml` parser
+    using the re module to make case insensitive replacement.
+    Accepts a string. Returns a string.
     """
     import re
     h = re.escape('<?xml version="1.0" encoding="utf-8"?>') # re.escape ? and .
@@ -228,7 +279,8 @@ def remove_header(xml):
 
 def clean_tags(soup):
     """
-    remove certain tags: '<a', 'id', 'class' from BeautifulSoup object
+    Remove certain tags: '<a', 'id', 'class' from BeautifulSoup object.
+    Accepts BeautifulSoup object. Returns BeautifulSoup object. 
     """
     # delete all '<a href' tags
     for a in soup.find_all('a'):
@@ -252,25 +304,25 @@ def clean_tags(soup):
 def make_html(body, head, parser='xml'):
     """
     Inserts a body within the head in html/xml file.
-    Accepts strings.
+    Accepts strings. Returns a string.
     """
     n = body.count('<body>')
     if n > 1:
         raise ValueError('More than one body tags found inside body!')
     if n == 0:
         body = '<body>' + body + '</body>'
-    body = BeautifulSoup(body, parser=parser)
-    head = BeautifulSoup(head, parser=parser)
-    htm = head.insert(1, body)
-    #head.head.append(body)
-    return htm
+    body = BeautifulSoup(body, parser=parser).find('body')
+    html = BeautifulSoup(head, parser=parser)
+    html.insert(1, body)
+    html = str(html)
+    return html
 
 
 
 def get_head(html, parser='xml'):
     """
     Extract the head from an html/xml file. 
-    Accepts a string. Outputs a string. 
+    Accepts a string. Returns a string. 
     """
     html = BeautifulSoup(html, parser=parser)
     body = html.find('body')
