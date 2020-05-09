@@ -7,9 +7,11 @@ Created 3 May 2020
 
 Main functions to edit the xhtml source code for the GDLC (Kindle edition).
 """
+
 import os
 import re
 from bs4 import BeautifulSoup, Tag
+
 
 
 def trim_definition(item, verbose=False, clean=False, parser='xml'):
@@ -145,13 +147,15 @@ def make_definition(soup, verbose=False, clean=False):
             p.wrap(Tag(name="span"))
             p.unwrap()
     if clean:
-        # align all blockquote groups to left 
+        # align all blockquote groups to left:
         for b in soup.find_all('blockquote'):
             b.attrs['align'] = 'left'
         # clean all tags inside word definitions:
         for t in soup.find_all(class_=True):
             del t.attrs['class']
-    s = str(soup)
+    # remove unwanted tags:
+    s = get_body(soup)
+    # remove empty lines:
     s = re.sub(r'\n+', '\n', s)
     if not s:
         s = 'Definition missing'
@@ -174,6 +178,7 @@ def dictionarize(item, verbose=False, clean=False, parser='xml'):
     """
     if verbose:
         print_summary(dictionarize.__doc__)
+        print_todo()
     # Trim & Clean dictionary entry:
     soup = trim_definition(item, verbose=verbose, clean=clean, parser=parser)
     # Emtpy or malformed definitions return None, return empty string if None
@@ -205,6 +210,21 @@ def print_summary(docstring):
     print('\n\nThe `verbose` flag has been set to `True`\n')
     print('Summary of main function:\n')
     print(docstring, '\n')
+    return None
+
+
+
+def print_todo():
+    """ 
+    Prints information about outstanding issues.
+    Returns None.
+    """ 
+    print('\n\nTO DO LIST:\n================\n')
+    print('check if all definitions are in blockquote with class calibre27')
+    print('Make list of children to print as is, e.g. <h2>')
+    print('Test find_all instead of findChildren')
+    print('Test body.descendants instead of children\n')
+    print('\n================\n\n')
     return None
 
 
@@ -311,9 +331,10 @@ def make_html(body, head, parser='xml'):
         raise ValueError('More than one body tags found inside body!')
     if n == 0:
         body = '<body>' + body + '</body>'
+    # the body element should be tagged by <body></body>
     body = BeautifulSoup(body, parser=parser).find('body')
     html = BeautifulSoup(head, parser=parser)
-    html.insert(1, body)
+    html.head.insert_after(body)
     html = str(html)
     return html
 
@@ -329,4 +350,30 @@ def get_head(html, parser='xml'):
     body.decompose()
     html = str(html)
     return html
+
+
+
+def get_body(html, parser='xml'):
+    """
+    Extract the body from an html/xml file. 
+    Accepts a string. Returns a string. 
+    """
+    # works only for bare body tags <body> and </body>
+    if isinstance(html, str):
+        r1, r2 = '^.*<body>', '^.*>ydob/<'
+        body = re.sub(r2, '', re.sub(r1, '', html, flags=re.DOTALL)[::-1], flags=re.DOTALL)[::-1]
+    # more general, should work if body tag has class or id
+    elif isinstance(html, Tag):
+        soup = BeautifulSoup(str(html), parser=parser)
+        body = soup.find('body')
+        body = ''.join(['%s' % x for x in soup.body.contents])
+    # not currently used but kept for reference
+    elif isinstance(html, BeautifulSoup):
+        soup = html
+        body = soup.find('body')
+        body = ''.join(['%s' % x for x in soup.body.contents])
+    else:
+        raise ValueError('function get_body() expects either a string or a BeautifulSoup object')
+    body = re.sub(r'\n+', '\n', body)
+    return body
 

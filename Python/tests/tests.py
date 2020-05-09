@@ -5,7 +5,7 @@ Created 3 May 2020
 
 @author: patricktoche
 
-Tests for the main function
+Tests of some of the functions used
 """
 
 
@@ -22,6 +22,7 @@ test = """
 print(dictionarize(test, verbose=True))
 
 
+
 # Test 2: Output similar to Real Acadamia Española mobi format (class + id suppressed)
 test = """
 <blockquote class="calibre27">
@@ -35,7 +36,6 @@ test = """
 print(dictionarize(test, clean=True))
 
 
-# Just in case: must work even if class="ps" missing, if class="df" missing, if class="rf" missing
 
 # Test 3: an incomplete definition: missing class="rf"
 test = """
@@ -47,6 +47,7 @@ test = """
   </blockquote>
 """
 print(dictionarize(test))
+
 
 
 # Test 4: an incomplete definition: missing class="df"
@@ -61,6 +62,7 @@ test = """
 print(dictionarize(test))
 
 
+
 # Test 5: an incomplete definition: missing class="ps" and class="p"
 test = """
   <blockquote class="calibre27">
@@ -68,6 +70,7 @@ test = """
     <p class="df"><code class="calibre22"><sup class="calibre23">■</sup><strong class="calibre13">AAA -bb</strong></code><sup class="calibre23">1</sup></p>
 """
 print(dictionarize(test))
+
 
 
 # Test 6: A dictionary entry with weird stuff
@@ -123,6 +126,7 @@ test = """
 print(dictionarize(test))
 
 
+
 # Test 7: A definition with unnecessary forward slash: TO DO: MAY NEED TO BE FIXED
 test = """
   <blockquote class="calibre27">
@@ -132,6 +136,7 @@ test = """
   </blockquote>
 """
 print(dictionarize(test))
+
 
 
 # Test 8: Using other parsers
@@ -147,6 +152,7 @@ test = """
 print(dictionarize(test, parser='html.parser', clean=False))
 print(dictionarize(test, parser='lxml', clean=True))
 print(dictionarize(test, parser='html5lib', clean=True, verbose=True))
+
 
 
 # Test 9: Get head from html file
@@ -173,7 +179,61 @@ print(get_head(test))
 print(get_head(test, parser='lxml'))
 
 
-# Test 10: Import html file
+
+# Test 10: Get body from html file (as string, BeautifulSoup or Tag)
+test = """
+<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Unknown</title>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+    <link href="../Styles/style0001.css" rel="stylesheet" type="text/css"/>
+    <link href="../Styles/style0002.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<blockquote class="calibre27">
+    <p class="rf">-&gt;AAA<sup class="calibre32">1</sup></p>
+    <p class="df"><code class="calibre22"><sup class="calibre23">■</sup><strong class="calibre13">AAA -bb</strong></code><sup class="calibre23">1</sup></p>
+    <p class="ps">Definition here.</p>
+    <p class="p">More details here.</p>
+    <p class="p">Even more details here.</p>
+  </blockquote>
+</body>
+</html>
+"""
+# string:
+print(get_body(test))
+# BeautifulSoup object:
+print(get_body(BeautifulSoup(test)))
+# Tag object: 
+print(get_body(BeautifulSoup(test).find('body')))
+
+
+
+# Test 11: Make an html file from body and head
+head = """
+<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Unknown</title>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<link href="../Styles/style0001.css" rel="stylesheet" type="text/css"/>
+<link href="../Styles/style0002.css" rel="stylesheet" type="text/css"/>
+</head>
+</html>
+"""
+body = """
+<blockquote class="calibre27">
+    <p class="rf">-&gt;AAA<sup class="calibre32">1</sup></p>
+    <p class="df"><code class="calibre22"><sup class="calibre23">■</sup><strong class="calibre13">AAA -bb</strong></code><sup class="calibre23">1</sup></p>
+    <p class="ps">Definition here.</p>
+    <p class="p">More details here.</p>
+    <p class="p">Even more details here.</p>
+  </blockquote>
+"""
+print(make_html(body, head))
+
+
+
+# Test 12: Import html file
 import os
 base = os.path.join(os.path.sep, 'Users', 'PatrickToche', 'KindleDict', 'GDLC-Kindle-Lookup', 'Python', 'tests')
 name0 = 'test4.html'
@@ -192,4 +252,26 @@ with open(os.path.join(base, name0)) as infile, open(os.path.join(base, name1), 
         h = '<?xml version="1.0" encoding="utf-8"?>'
         s = s.replace(h, '')
         outfile.write(s)
+
+
+
+# Test 13: Loop inside a directory 
+
+# Make names and run loop
+indir = os.path.join(os.path.sep, 'Users', 'PatrickToche', 'KindleDict', 'GDLC-Kindle-Lookup', 'GDLC', 'mobi8', 'OEBPS', 'Text')
+outdir = os.path.join(os.path.sep, 'Users', 'PatrickToche', 'KindleDict', 'GDLC-Kindle-Lookup', 'Python', 'output')
+filepath = os.path.join(os.path.sep, indir, 'part0000.xhtml')
+# make_names(filepath, last = 4)
+# make_names(filepath, first = 2, last = 4)
+# make_names(filepath, first = 275)
+filelist = make_names(filepath)
+# Do not do anything to files 000-015 and 276-277
+# To do: clean up these non-dictionary pages
+# Act on dictionary files only:
+dictfiles = filelist[16:276]
+#xml = loop_away(dictfiles, outdir, verbose=False)
+
+# debug
+f = filelist[16:17]
+xml = loop_away(f, outdir, verbose=False)
 

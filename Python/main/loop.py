@@ -44,10 +44,6 @@ def make_names(filepath, first=None, last=None):
 
 # Step 2: Loop away
 def loop_away(filelist, outdir, verbose=False, clean=False, parser='xml'):
-    print('To Do: check if all definitions are in blockquote with class calibre27')
-    print('To Do: Make list of children to print')
-    print('To Do: Test find_all instead of findChildren')
-    print('To Do: Test body.descendants instead of children\n')
     print('PROCESSING')
     for file in filelist:
         filename = os.path.basename(file)
@@ -71,9 +67,10 @@ def loop_away(filelist, outdir, verbose=False, clean=False, parser='xml'):
                     print(child, file=outfile)
                 # tags that contain dictionary definitions are processed
                 elif child.name in names and any(c in child['class'] for c in classes):
-                    #print('debug: check this blockquote child:', child)
+                    #print('debug loop_away: check this blockquote child:', child)
                     s = str(child)
                     s = dictionarize(s, verbose=verbose, clean=clean, parser=parser)
+                    s = s + '\n' # add blank line for clarity in debugging
                     print(s, file=outfile)
                 else:
                     if verbose:
@@ -89,18 +86,3 @@ def loop_away(filelist, outdir, verbose=False, clean=False, parser='xml'):
             outfile.truncate()
     print('\nDONE.')
     return html
-
-
-
-
-# Make names and run loop
-indir = os.path.join(os.path.sep, 'Users', 'PatrickToche', 'KindleDict', 'GDLC-Kindle-Lookup', 'GDLC', 'mobi8', 'OEBPS', 'Text')
-outdir = os.path.join(os.path.sep, 'Users', 'PatrickToche', 'KindleDict', 'GDLC-Kindle-Lookup', 'Python', 'output')
-filepath = os.path.join(os.path.sep, indir, 'part0000.xhtml')
-make_names(filepath, last = 4)
-make_names(filepath, first = 2, last = 4)
-make_names(filepath, first = 275)
-filelist = make_names(filepath)
-f = filelist[16:17]
-xml = loop_away(f, outdir)
-
