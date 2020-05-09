@@ -1,6 +1,8 @@
 ## WARNING!
 
-MAY 2020: WORK IN PROGRESS. UNTESTED. HORRIBLE CODE. 
+MAY 2020: WORK IN PROGRESS. UNTESTED. VERY PRELIMINARY.
+
+The code has not been optimized and was written over two days without prior thoughts, refactored for another two days, polished a little in my spare time. The code relies on the BeautifulSoup library, a library I had never used before... 
 
 ## Overview
 
@@ -22,6 +24,19 @@ Python code to edit an ebook dictionary into a Kindle lookup dictionary that may
 
 You must be able to run Python 3 code and the BeautifulSoup library. As the files to be processed are large and the content proprietary, online emulators may not be the appropriate tool. You must have a copy of the dictionary. A free sample may be found inside the GDLC directory. 
 
+Python: Make sure you have the appropriate parser libraries installed, e.g. the lxml parser. Examples:
+    pip install lxml                 # general purpose package manager 
+    brew install html.parser  # popular for MacOS
+    conda install html5lib     # Anaconda environment manager
+
 ## Getting Help
 
 File an issue and let's see if I can help. Let me know if you can contribute. Do you already have a Catalan Lookup dictionary? Let me know! You're looking for one? Let me know. 
+
+## History
+
+My original plan was to make a lookup dictionary for Aranes and Occitan. I started with Catalan because I happen to own an electronic copy of the dictionary. 
+
+Suggestions for improvement welcome!
+
+@author: Patrick Toche. 

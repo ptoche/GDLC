@@ -7,7 +7,6 @@ Created 3 May 2020
 
 Checks the xml file for any syntax errors. For XML schema validation, we use the etree module from the lxml package. We import StringIO from the io package to pass strings as files to etree. 
 
-
 """
 
 import os
@@ -37,4 +36,3 @@ except etree.XMLSyntaxError as err:
 except:
     print('Unknown error, exiting.')
     quit()
-

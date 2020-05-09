@@ -5,10 +5,6 @@
 .AppleDouble
 .LSOverride
 
-# Icon must end with two \r
-Icon
-
-
 # Thumbnails
 ._*
 
@@ -38,16 +34,3 @@ $RECYCLE.BIN/
 .sync.ffs_db
 *.ffs_db
 
-
-## Project specific
-*.bak
-*.tmp
-tmp*.*
-*_tmp.*
-*todo*.*
-*TODO*.*
-*to-do*.*
-*TO-DO*.*
-.sync.ffs_db
-.sync.ffs_db
-*.ffs_db
