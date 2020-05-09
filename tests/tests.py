@@ -155,7 +155,7 @@ print(dictionarize(test, parser='html5lib', clean=True, verbose=True))
 
 
 
-# Test 9: Get head from html file
+# Test 9: Get head from html page
 test = """
 <?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -180,7 +180,7 @@ print(get_head(test, parser='lxml'))
 
 
 
-# Test 10: Get body from html file (as string, BeautifulSoup or Tag)
+# Test 10: Get body from html page (as string, BeautifulSoup or Tag)
 test = """
 <?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -209,7 +209,7 @@ print(get_body(BeautifulSoup(test).find('body')))
 
 
 
-# Test 11: Make an html file from body and head
+# Test 11: Make an html page from body and head
 head = """
 <?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -233,12 +233,13 @@ print(make_html(body, head))
 
 
 
-# Test 12: Import html file
+# Test 12: Import html file and save to file 
+# first version used for loop_away(): kept for reference only
 import os
-base = os.path.join(os.path.sep, 'Users', 'PatrickToche', 'KindleDict', 'GDLC-Kindle-Lookup', 'Python', 'tests')
+indir = os.path.join(os.path.sep, os.getcwd(), 'GDLC', 'tests')
 name0 = 'test4.html'
 name1 = 'junk.html'
-with open(os.path.join(base, name0)) as infile, open(os.path.join(base, name1), 'w') as outfile:
+with open(os.path.join(indir, name0)) as infile, open(os.path.join(indir, name1), 'w') as outfile:
     soup = BeautifulSoup(infile, parser='xml')
     body = soup.find('body')
     for h in body:
@@ -255,23 +256,28 @@ with open(os.path.join(base, name0)) as infile, open(os.path.join(base, name1), 
 
 
 
-# Test 13: Loop inside a directory 
-
-# Make names and run loop
-indir = os.path.join(os.path.sep, 'Users', 'PatrickToche', 'KindleDict', 'GDLC-Kindle-Lookup', 'GDLC', 'mobi8', 'OEBPS', 'Text')
-outdir = os.path.join(os.path.sep, 'Users', 'PatrickToche', 'KindleDict', 'GDLC-Kindle-Lookup', 'Python', 'output')
+# Test 13: Make file names 
+indir = os.path.join(os.path.sep, os.getcwd(), 'GDLC', 'mobi', 'mobi8', 'OEBPS', 'Text')
+outdir = os.path.join(os.path.sep, os.getcwd(), 'GDLC', 'output')
 filepath = os.path.join(os.path.sep, indir, 'part0000.xhtml')
-# make_names(filepath, last = 4)
-# make_names(filepath, first = 2, last = 4)
-# make_names(filepath, first = 275)
-filelist = make_names(filepath)
-# Do not do anything to files 000-015 and 276-277
-# To do: clean up these non-dictionary pages
-# Act on dictionary files only:
-dictfiles = filelist[16:276]
-#xml = loop_away(dictfiles, outdir, verbose=False)
+make_names(filepath, last = 4)
+make_names(filepath, first = 2, last = 4)
+make_names(filepath, first = 275)
+    
 
-# debug
+
+# Test 14: Loop inside a directory of files
+    ## To do: Skip files 000-015 and 276-277
+    ## To do: clean up these non-dictionary pages
+    ## To do: generate a LookUp mobi file with definitions only + cover
+# List dictionary files only:
+filelist = make_names(filepath)
+dictfiles = filelist[16:276]
+# Start with a subset of the files:
 f = filelist[16:17]
 xml = loop_away(f, outdir, verbose=False)
+
+# Loop over the entire directory of definitions:
+xml = loop_away(dictfiles, outdir, verbose=False)
+
 
