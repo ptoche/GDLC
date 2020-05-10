@@ -127,7 +127,7 @@ print(dictionarize(test))
 
 
 
-# Test 7: A definition with unnecessary forward slash: TO DO: MAY NEED TO BE FIXED
+# Test 7: A definition with unnecessary forward slash: 
 test = """
   <blockquote class="calibre27">
     <p class="rf">-&gt;a/</p>
@@ -149,9 +149,9 @@ test = """
     <p class="p">Even more details here.</p>
   </blockquote>
 """
-print(dictionarize(test, parser='html.parser', clean=False))
-print(dictionarize(test, parser='lxml', clean=True))
-print(dictionarize(test, parser='html5lib', clean=True, verbose=True))
+print(dictionarize(test, features='html.parser', clean=False))
+print(dictionarize(test, features='lxml', clean=True))
+print(dictionarize(test, features='html5lib', clean=True, verbose=True))
 
 
 
@@ -176,7 +176,7 @@ test = """
 </html>
 """
 print(get_head(test))
-print(get_head(test, parser='lxml'))
+print(get_head(test, features='lxml'))
 
 
 
@@ -237,10 +237,11 @@ print(make_html(body, head))
 # first version used for loop_away(): kept for reference only
 import os
 indir = os.path.join(os.path.sep, os.getcwd(), 'GDLC', 'tests')
+outdir = os.path.join(os.path.sep, os.getcwd(), 'GDLC', 'tmp')
 name0 = 'test4.html'
 name1 = 'junk.html'
 with open(os.path.join(indir, name0)) as infile, open(os.path.join(indir, name1), 'w') as outfile:
-    soup = BeautifulSoup(infile, parser='xml')
+    soup = BeautifulSoup(infile, features='xml')
     body = soup.find('body')
     for h in body:
         e = body.find('h2')
@@ -257,8 +258,8 @@ with open(os.path.join(indir, name0)) as infile, open(os.path.join(indir, name1)
 
 
 # Test 13: Make file names 
-indir = os.path.join(os.path.sep, os.getcwd(), 'GDLC', 'mobi', 'mobi8', 'OEBPS', 'Text')
-outdir = os.path.join(os.path.sep, os.getcwd(), 'GDLC', 'output')
+indir = os.path.join(os.path.sep, os.getcwd(), 'source', 'GDLC_unpacked', 'mobi8', 'OEBPS', 'Text')
+outdir = os.path.join(os.path.sep, os.getcwd(), 'output', 'GDLC_processed', 'mobi8', 'OEBPS', 'Text')
 filepath = os.path.join(os.path.sep, indir, 'part0000.xhtml')
 make_names(filepath, last = 4)
 make_names(filepath, first = 2, last = 4)

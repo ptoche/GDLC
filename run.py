@@ -1,19 +1,39 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created 3 May 2020
+Add the GDLC directory to your PYTHONPATH. 
+
+MacOS/Linus: open ~/.bash_profile and add the following:
+    export PYTHONPATH="/Users/username/GDLC"
+Or if you use Spyder, set it via python -> PYTHONPATH manager
+
+Windows: Computer -> Properties -> Advanced system settings -> Environment variables -> New
+Name the new variable PYTHONPATH and set its value to the directory path, e.g. "C:/GDLC" 
+
+Check that your PYTHONPATH has been set properly with:
+    import os
+    os.environ['PYTHONPATH']
+
+Created 9 May 2020
 
 @author: patricktoche
-
 """
 
-# Import module
+# Install module from github:
+pip install https://github.com/ptoche/GDLC/zipball/master
+
+# or if git is installed on your system:
+pip install git+https://github.com/ptoche/GDLC.git#egg=GDLC
+
+# Import module:
 import GDLC
 
-# If the module is not on the Python path, locate its path, e.g.
-import os, sys
-# sys.path.append('/usr/sammy/')
-os.path.join(os.path.sep, os.getcwd(),  'GDLC')
+# Check that the module has been imported:
+print(g.__doc__)  # prints the module's docstring
+
+# Check what functions are available
+import platform
+print(dir(GDLC))
 
 # Call the main function on a word:
 word_in = """
@@ -29,5 +49,5 @@ word_in = """
     <p class="p"><strong class="n">2</strong> <strong class="calibre13">no saber ni la a</strong> No saber ni els rudiments d’una cosa.</p>
   </blockquote>
 """
-word_out = dictionarize(word_in, verbose=True, clean=False, parser='html.parser')
+word_out = GDLC..dictionarize(word_in, verbose=True, clean=False, features='lxml')
 print(word_out)

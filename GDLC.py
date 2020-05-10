@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created 3 May 2020
-
-@author: patricktoche
+"""GDLC basic information
 
 Functions to edit the xhtml source code for the GDLC (Kindle edition).
 
@@ -11,10 +8,33 @@ Written for the 'Gran diccionari de la llengua catalana' published by Institut d
 
 After conversion to the `azw` format via the `Calibre` plugin `KindleUnpack`, the dictionary entries appear as well-formed blocks of html code inside `blockquote` tags. 
 
-The code loops through the blocks and formats them one at a time. 
+The code loops through the blocks and formats them one at a time. The code may hopefully be adapted to other dictionaries, but almost certainly will not work without alterations. 
 
-The code below may hopefully be adapted to other dictionaries, but almost certainly will not work without alterations. 
+Example:
+    A word definition may be converted to a lookup dictionary definition with
 
+        $ GDLC.dictionarize(html_string)
+
+    For more examples, see inside `run.py`
+
+Args:
+    verbose, clean, and features are common arguments of several functions. Their description is not repeated inside each function. 
+    verbose (bool, optional): Set to True to print more information (useful for debugging).
+    clean (bool, optional): Set to True to remove classes, ids, and other style-specific attributes: conforms more with the style of dictionary definitions seen in unpacked mobi files. Set to False to keep some of that information: conforms more with the style of dictionary definitions seen in unpacked azw files. 
+    features (str, optional): Sets the parser to be used with BeautifulSoup. Defaults to 'lxml'. Other 
+
+Todo:
+    * Check code for parsers other than lxml
+    * Check if all definitions are in blockquote with class calibre27
+    * Check case of missing or malformed tags, e.g. with missing word or line-ending slash
+    * Make function to list children to skip and print as is, e.g. <h1>
+    * Test find_all instead of findChildren and check robustness of extract body code
+    * Test body.descendants instead of body.children
+    * Break code into smaller pieces so utility functions may have wider applicability
+
+Created 3 May 2020
+
+@author: patricktoche
 """
 
 import os
@@ -23,14 +43,25 @@ from bs4 import BeautifulSoup, Tag
 
 
 
-def trim_definition(item, verbose=False, clean=False, parser='xml'):
+def trim_definition(item, verbose=False, clean=False, features='lxml'):
     """
     Takes a single dictionary definition and checks for validity. 
     Also trims certain tags and formatting. 
-    Accepts a string. Returns a soup object or the empty string.
+
+    Args:
+    item (str): A word definition extracted from the GDLC azw dictionary.
+    verbose (bool, optional)
+    clean (bool, optional)
+    features (str, optional)
+
+    Returns:
+        BeautifulSoup or string()
+
+    Raises:
+        Exception: If item is not a string.
     """
     try:
-        soup = BeautifulSoup(item, parser=parser)
+        soup = BeautifulSoup(item, features=features)
     except Exception as ex:
         print("Warning: function expects a string.\n\n")
         er = RuntimeError("An exception was raised!")
@@ -59,10 +90,18 @@ def trim_definition(item, verbose=False, clean=False, parser='xml'):
 
 
 
-def split_definition(soup, verbose=False, clean=False, parser='xml'):
+def split_definition(soup, verbose=False, clean=False, features='lxml'):
     """
     Splits dictionary entry into three parts. 
-    Accepts a BeautifulSoup object. Returns a 3-tuple of BS objects.
+
+    Args:
+    soup (BeautifulSoup): A word definition processed by trim_definition()
+    verbose (bool, optional)
+    clean (bool, optional)
+    features (str, optional)
+
+    Returns:
+        A 3-tuple of BeautifulSoup objects.
     """
     # slice soup into chunks:
     s1, s2, s3 = '', '', '' 
@@ -95,7 +134,6 @@ def make_label(soup):
     """
     Extracts a label from dictionary entry. Uses first part of word or expression.
     Accepts a BeautifulSoup object. Returns a string. 
-    To do: remove slashes inside label that occur in some cases
     """
     x = soup.contents[0]
     x = x.replace('->', '')
@@ -173,19 +211,17 @@ def make_definition(soup, verbose=False, clean=False):
 
 
 
-def dictionarize(item, verbose=False, clean=False, parser='xml'):
+def dictionarize(item, verbose=False, clean=False, features='lxml'):
     """
     Takes a well-formed block of html code and formats it to conform with the Kindle dictionary structure. 
     """
-    if verbose:
-        print_todo()
     # Trim & Clean dictionary entry:
-    soup = trim_definition(item, verbose=verbose, clean=clean, parser=parser)
+    soup = trim_definition(item, verbose=verbose, clean=clean, features=features)
     # Emtpy or malformed definitions return None, return empty string if None
     if not soup:
         return ''
     # Split dictionary entry into parts:
-    s1, s2, s3 = split_definition(soup, verbose=verbose, clean=clean, parser=parser)
+    s1, s2, s3 = split_definition(soup, verbose=verbose, clean=clean, features=features)
     # Extract label value for dictionary entry: 
     s1 = make_label(s1)
     # Extract first word for word header: 
@@ -194,7 +230,7 @@ def dictionarize(item, verbose=False, clean=False, parser='xml'):
     s3 = make_definition(s3, verbose=verbose, clean=clean)
     # Concatenate label, word, definition, and tag group:
     s = '<idx:entry scriptable="yes">' + '\n' + s1 + s2 + s3 + '\n' + '</idx:entry>'
-    if parser == 'xml':
+    if features == 'xml':
         s = remove_header(s)
     if verbose:
         print_output(s)
@@ -210,21 +246,6 @@ def print_summary(docstring):
     print('\n\nThe `verbose` flag has been set to `True`\n')
     print('Summary of main function:\n')
     print(docstring, '\n')
-    return None
-
-
-
-def print_todo():
-    """ 
-    Prints information about outstanding issues.
-    Returns None.
-    """ 
-    print('\n\nTO DO LIST:\n================\n')
-    print('check if all definitions are in blockquote with class calibre27')
-    print('Make list of children to print as is, e.g. <h2>')
-    print('Test find_all instead of findChildren')
-    print('Test body.descendants instead of children\n')
-    print('\n================\n\n')
     return None
 
 
@@ -290,7 +311,6 @@ def remove_header(xml):
     using the re module to make case insensitive replacement.
     Accepts a string. Returns a string.
     """
-    import re
     h = re.escape('<?xml version="1.0" encoding="utf-8"?>') # re.escape ? and .
     r = re.sub(h, '', xml, flags=re.IGNORECASE | re.MULTILINE)
     return r
@@ -321,7 +341,7 @@ def clean_tags(soup):
 
 
 
-def make_html(body, head, parser='xml'):
+def make_html(body, head, features='lxml'):
     """
     Inserts a body within the head in html/xml file.
     Accepts strings. Returns a string.
@@ -332,20 +352,20 @@ def make_html(body, head, parser='xml'):
     if n == 0:
         body = '<body>' + body + '</body>'
     # the body element should be tagged by <body></body>
-    body = BeautifulSoup(body, parser=parser).find('body')
-    html = BeautifulSoup(head, parser=parser)
+    body = BeautifulSoup(body, features=features).find('body')
+    html = BeautifulSoup(head, features=features)
     html.head.insert_after(body)
     html = str(html)
     return html
 
 
 
-def get_head(html, parser='xml'):
+def get_head(html, features='lxml'):
     """
     Extract the head from an html/xml file. 
     Accepts a string. Returns a string. 
     """
-    html = BeautifulSoup(html, parser=parser)
+    html = BeautifulSoup(html, features=features)
     body = html.find('body')
     body.decompose()
     html = str(html)
@@ -353,7 +373,7 @@ def get_head(html, parser='xml'):
 
 
 
-def get_body(html, parser='xml'):
+def get_body(html, features='lxml'):
     """
     Extract the body from an html/xml file. 
     Accepts a string. Returns a string. 
@@ -364,7 +384,7 @@ def get_body(html, parser='xml'):
         body = re.sub(r2, '', re.sub(r1, '', html, flags=re.DOTALL)[::-1], flags=re.DOTALL)[::-1]
     # more general, should work if body tag has class or id
     elif isinstance(html, Tag):
-        soup = BeautifulSoup(str(html), parser=parser)
+        soup = BeautifulSoup(str(html), features=features)
         body = soup.find('body')
         body = ''.join(['%s' % x for x in soup.body.contents])
     # not currently used but kept for reference
@@ -412,7 +432,7 @@ def make_names(filepath, first=None, last=None):
 
 
 # Loop over all files in a given directory
-def loop_away(filelist, outdir, verbose=False, clean=False, parser='xml'):
+def loop_away(filelist, outdir, verbose=False, clean=False, features='lxml'):
     print('PROCESSING')
     for file in filelist:
         filename = os.path.basename(file)
@@ -422,10 +442,10 @@ def loop_away(filelist, outdir, verbose=False, clean=False, parser='xml'):
         classes = ['calibre27']
         # get the header from the source file
         with open(file, encoding='utf8') as infile:
-            head = get_head(infile, parser=parser)
+            head = get_head(infile, features=features)
         # get the body from the source file and make it into dictionary
         with open(file) as infile, open(outpath, 'w') as outfile:
-            soup = BeautifulSoup(infile, parser=parser)
+            soup = BeautifulSoup(infile, features=features)
             body = soup.find('body')
             for child in body.findChildren(recursive=False):
                 print('■', end='', flush=True)
@@ -438,7 +458,7 @@ def loop_away(filelist, outdir, verbose=False, clean=False, parser='xml'):
                 elif child.name in names and any(c in child['class'] for c in classes):
                     #print('debug loop_away: check this blockquote child:', child)
                     s = str(child)
-                    s = dictionarize(s, verbose=verbose, clean=clean, parser=parser)
+                    s = dictionarize(s, verbose=verbose, clean=clean, features=features)
                     s = s + '\n' # add blank line for clarity in debugging
                     print(s, file=outfile)
                 else:
@@ -449,7 +469,7 @@ def loop_away(filelist, outdir, verbose=False, clean=False, parser='xml'):
         # get the body from the target file and insert it into the head
         with open(outpath, 'r+') as outfile:
             body = outfile.read()
-            html = make_html(body=body, head=head, parser=parser)
+            html = make_html(body=body, head=head, features=features)
             outfile.seek(0)
             outfile.write(html)
             outfile.truncate()
