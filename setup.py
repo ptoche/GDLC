@@ -41,6 +41,7 @@ setup(
 
         # Specify the Python versions you support 
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3 :: Only',
 
         # Specify the Operating systems you support
@@ -54,16 +55,17 @@ setup(
 
     # When your source code is in a subdirectory under the project root, e.g.
     # `src/`, it is necessary to specify the `package_dir` argument.
-    # package_dir={'': 'src'},  # Optional
+    package_dir={'': 'GDLC', 'tests', 'logs'},  # Optional
 
     # You can just specify package directories manually here
-    packages=find_packages(where='.', exclude=()),  # Required
+    # packages=find_packages(where='src', exclude=()),  # Required
+    packages=['GDLC', 'GDLC.tests', 'GDLC.logs'],
 
     # Specify which Python versions you support. 
     python_requires='>=3.5, <4',  # Required
 
     # This field lists other packages that your project depends on to run.
-    install_requires=['os', 're', 'BeautifulSoup >= 4.9.0'],  # Optional
+    install_requires=['re', 'BeautifulSoup >= 4.9.0'],  # Optional
 
     # List additional groups of dependencies here.
     # extras_require={},  # Optional
@@ -80,9 +82,7 @@ setup(
 
     # List additional URLs that are relevant to your project as a dict.
     project_urls={  # Optional
-        'Bug Reports': 'https://github.com/ptoche/GDLC',
-    #    'Funding': 'https://donate.pypi.org',
-    #    'Say Thanks!': 'http://saythanks.io/to/example',
         'Source': 'https://github.com/ptoche/GDLC',
+        'Issues': 'https://github.com/ptoche/GDLC',
     },
 )
