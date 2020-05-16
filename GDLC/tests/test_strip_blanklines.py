@@ -1,5 +1,6 @@
-"""
-This file is used for debugging doctest: Fill in with your own content
+""" 
+Remove blank lines from a string or a BeautifulSoup object and returns an object of the same type:
+To Do: Fix bug: If there is a blank line before the closing `body` tag, it will not be removed.
 
 >>> from GDLC.GDLC import *
 

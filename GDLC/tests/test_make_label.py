@@ -1,12 +1,14 @@
 """ 
-Extract label from word definition:
->>> test = BeautifulSoup('''<blockquote class="calibre27">
-    <p class="rf">-&gt;AAA<sup class="calibre32">1</sup></p>
-    <p class="df"><code class="calibre22"><sup class="calibre23">■</sup><strong class="calibre13">AAA -bb</strong></code><sup class="calibre23">1</sup></p>
-    <p class="ps">Definition here.</p>
-    <p class="p">More details here.</p>
-    <p class="p">Even more details here.</p>
-  </blockquote>''', features = 'lxml')
->>> print(make_label(test))
-make_label() FAILS --> CHECK THIS
+Extract label from word definition: Takes the first element s1 returned by `split_defn()`
+
+>>> from GDLC.GDLC import *
+>>> html = '''<p class="rf">-&gt;AAA<sup class="calibre32">1</sup></p>'''
+>>> soup = BeautifulSoup(html, features = 'lxml')
+>>> print(make_label(soup))
+<idx:orth value="<body><p class="rf">-&gt;AAA<sup class="calibre32">1</sup></p></body>">
+      <idx:infl>
+        <idx:iform name="" value="<body><p class="rf">-&gt;AAA<sup class="calibre32">1</sup></p></body>"/>
+      </idx:infl>
+    </idx:orth>
+
 """

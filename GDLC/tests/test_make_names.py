@@ -1,5 +1,6 @@
 """ 
 Make a list of files to be processed:
+
 >>> from GDLC.GDLC import *
 >>> import os
 >>> indir = os.path.join(os.path.sep, 'Users', 'PatrickToche', 'GDLC', 'source', 'GDLC_unpacked', 'mobi8', 'OEBPS', 'Text')

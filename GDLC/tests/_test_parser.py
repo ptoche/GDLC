@@ -1,5 +1,5 @@
 """ 
-# TO DO: Experiment with different parsers: Set clean=True to make test more thorough.
+# TO DO: Experiment with different parsers
 
 # Output similar to Real Acadamia Española azw format:
 >>> test = '''<blockquote class="calibre27">

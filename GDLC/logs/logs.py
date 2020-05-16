@@ -2,12 +2,17 @@
 Configure logging
 """
 
+# To navigate the directory structure:
 import os
 
+# To add a time stamp to the log's file name:
+from datetime import datetime
+
+# Python's logging module:
 import logging
 
-def custom_logs(datefmt='%H:%M:%S', 
-                filename=os.path.join(os.path.dirname(os.path.realpath(__file__)), 'GDLC.log'),
+def custom_logs(datefmt='%Y-%m-%d::%H:%M:%S', 
+                filename=datetime.now().strftime(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'logfiles', 'GDLC_%Y_%m_%d_%H_%M.log')),
                 format='%(name)s:%(asctime)s %(filename)s %(process)d[%(funcName)s line:%(lineno)d] %(levelname)s:%(message)s',
                 filemode='w',
                 force=True,

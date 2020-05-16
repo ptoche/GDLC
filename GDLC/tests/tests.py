@@ -63,16 +63,16 @@ def test_examples(verbose = False):
 #    r = doctest.testfile('test_parser.py') # doctest: +SKIP
 #    a[0] += r[0] ; a[1] += r[1] 
 
-    if verbose: print('...testing examples in file test_remove_char.py')
-    r = doctest.testfile('test_remove_char.py')
+    if verbose: print('...testing examples in file test_replace_strings.py')
+    r = doctest.testfile('test_replace_strings.py')
     a[0] += r[0] ; a[1] += r[1] 
 
-    if verbose: print('...testing examples in file test_remove_header.py')
-    r = doctest.testfile('test_remove_header.py')
+    if verbose: print('...testing examples in file test_strip_header.py')
+    r = doctest.testfile('test_strip_header.py')
     a[0] += r[0] ; a[1] += r[1] 
 
-    if verbose: print('...testing examples in file test_remove_tag.py')
-    r = doctest.testfile('test_remove_tag.py')
+    if verbose: print('...testing examples in file test_strip_tag.py')
+    r = doctest.testfile('test_strip_tag.py')
     a[0] += r[0] ; a[1] += r[1] 
 
     if verbose: print('...testing examples in file test_split_defn.py')

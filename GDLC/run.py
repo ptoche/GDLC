@@ -49,7 +49,7 @@ import GDLC.GDLC
 import GDLC.tests
 
 # Run GDLC functions:
-GDLC.GDLC.remove_char('abc', 'b')
+GDLC.GDLC.replace_strings('abc', 'b')
 
 # Run tests functions:
 GDLC.tests.test_examples()
@@ -65,7 +65,7 @@ import GDLC.GDLC as g
 print(g.__doc__)
 
 # Run functions from the main package:
-g.remove_char('abc', 'b')
+g.replace_strings('abc', 'b')
 
 # Import the sub-package `tests` with an alias:
     # Type t.f() instead of GDLC.tests.tests.f()
@@ -89,7 +89,7 @@ print(GDLC.__doc__)
 help(GDLC)
 
 # Run functions from the main package:
-GDLC.remove_char('abc', 'b')
+GDLC.replace_strings('abc', 'b')
 
 # Import the sub-package `tests` directly:
     # Type tests.f() instead of GDLC.tests.tests.f()

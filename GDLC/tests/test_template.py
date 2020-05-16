@@ -13,12 +13,12 @@ Print their sum:
 >>> print(x+y)
 3
 
->>> def remove_char(text:str, char:str):
+>>> def replace_string(text:str, char:str):
 ...    return text.replace(char, '')
 >>> test = '''a
 ... b
 ... c'''
->>> r = remove_char(test, 'b')
+>>> r = replace_string(test, 'b')
 >>> print(r)
 a
 <BLANKLINE>

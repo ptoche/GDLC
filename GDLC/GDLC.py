@@ -99,7 +99,7 @@ def dictionarize(item, verbose=False, clean=False, features='lxml'):
     # Concatenate label, word, definition, and tag group:
     s = '<idx:entry scriptable="yes">' + '\n' + s1 + s2 + s3 + '\n' + '</idx:entry>'
     if features == 'xml':
-        s = remove_header(s)
+        s = strip_header(s)
     if verbose:
         print_output(s)
     return s
@@ -110,28 +110,28 @@ def get_body(html, features='lxml'):
     Extract the body from an html/xml file. 
 
     Args:
-        html (str): html page with head and body
+        html (str, BeautifulSoup, Tag): html page with head and body
     
     Returns:
         body (str): body of the html page
     """
-    # works only for bare body tags <body> and </body>
+    # string-based approach below works only for bare body tags <body> and </body>
     if isinstance(html, str):
         r1, r2 = '^.*<body>', '^.*>ydob/<'
         body = re.sub(r2, '', re.sub(r1, '', html, flags=re.DOTALL)[::-1], flags=re.DOTALL)[::-1]
-    # more general, should work if body tag has class or id
-    elif isinstance(html, Tag):
-        soup = BeautifulSoup(str(html), features=features)
-        body = soup.find('body')
-        body = ''.join(['%s' % x for x in soup.body.contents])
-    # not currently used but kept for reference
+    # all BeautifulSoup objects are also Tag objects, but not the reverse, so check Beautifulsoup first
+    # if BeautifulSoup: intended to work on any BeautifulSoup object:
     elif isinstance(html, BeautifulSoup):
         soup = html
         body = soup.find('body')
-        body = ''.join(['%s' % x for x in soup.body.contents])
+        body = ''.join(['%s' % x for x in body])
+    # if Tag: intended to work if body tag has class or id:
+    elif isinstance(html, Tag):
+        soup = BeautifulSoup(str(html), features=features)  # essentially re-doing previous step... ugly
+        body = ''.join(['%s' % x for x in soup.body.contents])  # ? soup.find('body') equivalent to soup.body.contents
     else:
         raise ValueError('function get_body() expects either a string or a BeautifulSoup object')
-    body = re.sub(r'\n+', '\n', body)
+    body = re.sub(r'\n+', '\n', body).strip()  # .strip() removes leading/trailing blankspaces/newlines
     return body
 
 
@@ -150,7 +150,7 @@ def get_head(html, features='lxml'):
     html = BeautifulSoup(html, features=features)
     body = html.find('body')
     body.decompose()
-    head = str(html)
+    head = str(html).strip()
     return head
 
 
@@ -251,7 +251,7 @@ def make_defn(soup, verbose=False, clean=False):
             del t.attrs['class']
     # remove unwanted tags:
     s = get_body(soup)
-    # remove empty lines:
+    # remove blank lines:
     s = re.sub(r'\n+', '\n', s)
     if not s:
         s = 'Definition missing'
@@ -336,7 +336,8 @@ def make_label(soup):
     Returns:
         label (str): label used to identify the dictionary entry
     """
-    x = soup.contents[0]
+    x = soup.find('body')
+    x = str(x)
     x = x.replace('->', '')
     # Now substitute the label into:
     s = """
@@ -363,10 +364,11 @@ def make_word(soup):
     Returns:
         word (str): word used as the header of the dictionary entry
     """
-    y0 = soup.contents[0].contents[0].split(' ', 1)[0]
+    y = soup.find('p', attrs={'class':'df'})
+    y0 = y.text.split(' ', 1)[0]
     # Extract all words:
     y1 = ''
-    for child in soup.children:
+    for child in y.children:
         y1 += str(child)
     # Now substitute the words into:
     s = """
@@ -490,23 +492,92 @@ def print_any_type(*args):
 
 
 
-def remove_char(text:str, *args:str):
+def strip_blanklines(item, verbose=False, features='lxml'):
     """
-    Remove all occurrences of the second argument from the first. 
+    Remove blank lines from string or BeautifulSoup object.
+
+    Args: 
+        item (str, BeautifulSoup): 
+
+    Returns: 
+        item (str, BeautifulSoup): returns same type as argument
+    """
+    if not isinstance(item, (str, BeautifulSoup, Tag)):
+        print('strip_blanklines() only accepts objects of type `str`, `BeautifulSoup`, `Tag`')
+    try:
+        # strip from string:
+        if isinstance(item, str):
+            return item.strip()
+            #return re.sub(r'\n+', '\n', item)
+        # strip from bs:
+        if isinstance(item, (BeautifulSoup, Tag)):
+            return strip_blanklines_bs(item, verbose=verbose, features=features)
+    except Exception as e:
+        return e
+
+
+
+def strip_blanklines_bs(soup, verbose=False, features='lxml'):
+    """
+    Removes blank lines from a BeautifulSoup object
+    """
+    try:
+        # check if the soup has a body
+        b = soup.find('body')
+        if str(b).strip('\n'):
+            # look inside each body element
+            try:
+                for bi in b:
+                    # check if the body elements has children
+                    c = bi.findChildren(recursive=False)
+                    for ci in c:
+                        # strip from each element of the child
+                        if str(ci):
+                            f = ci.contents
+                            # `if str(x).strip()` removes empty list items:
+                            r = ''.join(['%s' % x for x in f if str(x).strip('\n')])
+            except:
+                # if the body elements have no children, strip from each body element content
+                f = b.contents
+                r = ''.join(['%s' % x for x in f if str(x).strip('\n')]).strip()
+        else:
+            # if the body has no child, strip lines from body.contents
+            r = soup.body.contents.strip()
+            print('CRUCIAL STEP')
+            #r = re.sub(r'\n+', '\n', ''.join(soup.body.contents))
+        if not str(r).strip('\n'):
+            pass
+        else:
+            soup = BeautifulSoup(r, features=features)
+    except:
+        # if the soup has no body, pass
+        if verbose:
+            print('No body found in BeautifulSoup body: pass')
+        pass
+    return soup
+
+
+
+def replace_strings(text:str, *args:str, replace=''):
+    """
+    Replaces all occurrences of the second argument in the first argument with the third. 
+    Default is to remove the given strings.
     
     Args: 
-        text (str): any string
+        text (str): string to replace from
+        replace (str): string to use as replacement, defaults to string()
+        *args (str): variable number of arguments
 
     Returns:
         text(str): string with given substrings(s) removed
     """
     for s in args:
-        text = text.replace(s, '')
+        text = text.replace(s, replace)
     return text
 
 
 
-def remove_header(xml):
+def strip_header(xml):
     """
     Remove unwanted header introduced when using the `xml` parser
     using the re module to make case-insensitive replacement.
@@ -525,7 +596,7 @@ def remove_header(xml):
 
 
 
-def remove_tag(soup:BeautifulSoup, *tag:str):
+def strip_tag(soup:BeautifulSoup, *args:str):
     """
     Remove tag from BeautifulSoup object
     
@@ -535,8 +606,9 @@ def remove_tag(soup:BeautifulSoup, *tag:str):
     Returns:
         soup (BeautifulSoup object): soup without tags
     """
-    for x in soup.find_all(tag):
-        x.extract()
+    for arg in args:
+        f = soup.find_all(arg)
+        [fi.unwrap() for fi in f]
         break
     return soup
 
@@ -575,7 +647,10 @@ def split_defn(soup, verbose=False, clean=False, features='lxml'):
             #p.decompose()
             p.extract()
         # extract the body as BeautifulSoup object
-        s3 = soup.find('body')
+        s3 = soup.find('blockquote')
+        # remove unwanted blank lines introduced by p.extract()
+        # 'bs4.element.Tag'
+        s3 = strip_blanklines_bs(s3)
     if verbose:
         print_types(s1, s2, s3)
     return s1, s2, s3
@@ -618,7 +693,7 @@ def trim_defn(item, verbose=False, clean=False, features='lxml'):
     soup.code.unwrap()
     # Always remove special character <sup>■</sup>
     for x in soup.find_all('sup'):
-        if '■' in x.get_text():  # remove_char(html, '■')
+        if '■' in x.get_text():  # replace_strings(html, '■')
             x.extract()
             break
     # clean further upon request
