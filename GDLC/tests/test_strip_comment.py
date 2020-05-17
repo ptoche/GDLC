@@ -1,9 +1,8 @@
-"""
-This file is used for debugging doctest: Fill in with your own content
-
->>> from GDLC.GDLC import *
+""" 
+Remove comments from BeautifulSoup object:
 
 An html page with comments:
+>>> from GDLC.GDLC import *
 >>> html = '''
 ... <?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml">
 ... <head>

@@ -27,10 +27,6 @@ def test_examples(verbose = False):
     r = doctest.testfile('test_clean_tags.py', optionflags=flags)
     a[0] += r[0] ; a[1] += r[1] 
 
-    if verbose: print('...testing examples in file test_dictionarize.py')
-    r = doctest.testfile('test_dictionarize.py')
-    a[0] += r[0] ; a[1] += r[1] 
-
     if verbose: print('...testing examples in file test_get_body.py')
     r = doctest.testfile('test_get_body.py')
     a[0] += r[0] ; a[1] += r[1] 
@@ -47,24 +43,36 @@ def test_examples(verbose = False):
     r = doctest.testfile('test_make_html.py')
     a[0] += r[0] ; a[1] += r[1] 
 
-    if verbose: print('...testing examples in file test_make_names.py')
-    r = doctest.testfile('test_make_names.py')
-    a[0] += r[0] ; a[1] += r[1] 
-
     if verbose: print('...testing examples in file test_make_label.py')
     r = doctest.testfile('test_make_label.py')
+    a[0] += r[0] ; a[1] += r[1] 
+
+    if verbose: print('...testing examples in file test_make_names.py')
+    r = doctest.testfile('test_make_names.py')
     a[0] += r[0] ; a[1] += r[1] 
 
     if verbose: print('...testing examples in file test_make_word.py')
     r = doctest.testfile('test_make_word.py')
     a[0] += r[0] ; a[1] += r[1] 
 
-#    if verbose: print('...testing examples in file test_parser.py')
-#    r = doctest.testfile('test_parser.py') # doctest: +SKIP
-#    a[0] += r[0] ; a[1] += r[1] 
+    if verbose: print('...testing examples in file test_parser.py')# doctest: +SKIP
+    r = doctest.testfile('test_parser.py')# doctest: +SKIP
+    a[0] += r[0] ; a[1] += r[1]# doctest: +SKIP
 
     if verbose: print('...testing examples in file test_replace_strings.py')
     r = doctest.testfile('test_replace_strings.py')
+    a[0] += r[0] ; a[1] += r[1] 
+
+    if verbose: print('...testing examples in file test_split_defn.py')
+    r = doctest.testfile('test_split_defn.py')
+    a[0] += r[0] ; a[1] += r[1] 
+
+    if verbose: print('...testing examples in file test_strip_blanklines.py')
+    r = doctest.testfile('test_strip_blanklines.py')
+    a[0] += r[0] ; a[1] += r[1] 
+
+    if verbose: print('...testing examples in file test_strip_comment.py')
+    r = doctest.testfile('test_strip_comment.py')
     a[0] += r[0] ; a[1] += r[1] 
 
     if verbose: print('...testing examples in file test_strip_header.py')
@@ -73,10 +81,6 @@ def test_examples(verbose = False):
 
     if verbose: print('...testing examples in file test_strip_tag.py')
     r = doctest.testfile('test_strip_tag.py')
-    a[0] += r[0] ; a[1] += r[1] 
-
-    if verbose: print('...testing examples in file test_split_defn.py')
-    r = doctest.testfile('test_split_defn.py')
     a[0] += r[0] ; a[1] += r[1] 
 
     if verbose: print('...testing examples in file test_trim_defn.py')

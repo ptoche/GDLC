@@ -41,7 +41,7 @@ import os
 import re
 
 from bs4 import BeautifulSoup, Tag
-
+from bs4 import NavigableString, Comment
 
 
 def clean_tags(soup):
@@ -158,6 +158,7 @@ def get_head(html, features='lxml'):
 def loop_away(filelist, outdir=os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'tmp')), verbose=False, clean=False, features='lxml'):
     """ Loop over all files in a given directory""" 
     print('\nOutput files will be saved in the following directory:\n\n', outdir, '\n\nSet `outdir` in function `loop_away` to change the default directory.\n\n')
+    # if directory `tmp` does not exist, create it:
     from pathlib import Path
     Path('tmp').mkdir(parents=True, exist_ok=True)
     # container to hold list of files that raise an error
@@ -168,40 +169,48 @@ def loop_away(filelist, outdir=os.path.abspath(os.path.join(os.path.dirname(os.p
         # hard-coded names and classes of tags that contain definitions:
         names = ['blockquote']
         classes = ['calibre27']
-        # get the header from the source file
+        # get the header from the source file:
         try:
             print('PROCESSING FILE:\n')
             with open(file, encoding='utf8') as infile:
                 head = get_head(infile, features=features)
-            # get the body from the source file and make it into dictionary
+            # open an infile to process input and an outfile to save the output:
             with open(file) as infile, open(outpath, 'w') as outfile:
+                # get the body from the source file:
                 soup = BeautifulSoup(infile, features=features)
                 body = soup.find('body')
+                # process the children:
                 for child in body.findChildren(recursive=False):
                     print('■', end='', flush=True)
                     if verbose:
                         print_child_info(child)
-                    # selected tags are printed as is
-                    if child.name in ['h1', 'h2', 'h3', '\n', 'link', 'table']:
+                    # selected tags are printed as is: 
+                    if child.name in ['h1', 'h2', 'h3', '\n']:
                         print(child, file=outfile)
-                    # tags that contain dictionary definitions are processed
+                    # tags that contain dictionary definitions are processed:
+                    # (`names` and `classes` are hard-coded lists defined above)
                     elif child.name in names and any(c in child['class'] for c in classes):
-                        #print('debug loop_away: check this blockquote child:', child)
+                        # convert to string, feed to `dictionarize()`, and print:
                         s = str(child)
                         s = dictionarize(s, verbose=verbose, clean=clean, features=features)
                         s = s + '\n' # add blank line for clarity in debugging
                         print(s, file=outfile)
                     else:
+                        # remove all other children: 
                         if verbose:
-                            print('This child was removed:\n', child)
-                        child.extract()
-            # get the body from the target file and insert it into the head
+                            print('\nThis child was removed:\n', child)
+                            print('\nCheck that this is desired behaviour. If not, add to the hard-coded list of `names` and `classes`.')
+                        child.extract()  # a blank line will be introduced at extraction locus
+                # exit the loop after all the children have been processed
+            # insert the body of the output file into the head of the input file: Note the 'r+' argument
+            # (this process reads the outfile, adds the head, and overwrites it with the complete html page)
             with open(outpath, 'r+') as outfile:
                 body = outfile.read()
                 html = make_html(body=body, head=head, features=features)
                 outfile.seek(0)
                 outfile.write(html)
                 outfile.truncate()
+        # if something goes wrong, log the error:
         except Exception as e:
             errors.append(filename)
             print('\n\nCRITICAL ERROR! \n\nPROBLEM WITH:\n\n', file, '\n\nAN ERROR WAS LOGGED\n\n')
@@ -210,7 +219,7 @@ def loop_away(filelist, outdir=os.path.abspath(os.path.join(os.path.dirname(os.p
             import traceback
             trace = traceback.format_exc()
             logging.error(trace)
-    print('\n\nDONE WITH JOB.')
+    print('\n\nALL FILES PROCESSED, BUT CHECK FOR ERRORS.')
     print('\nThe following files raised an exception:', errors)
     return html
 
@@ -364,12 +373,49 @@ def make_word(soup):
     Returns:
         word (str): word used as the header of the dictionary entry
     """
-    y = soup.find('p', attrs={'class':'df'})
-    y0 = y.text.split(' ', 1)[0]
+    
+    if not isinstance(soup, (BeautifulSoup, Tag)):
+        print('make_word() only accepts objects of type `BeautifulSoup`, `Tag`')
+    # BUG HERE
+    # typical form of s2:
+    # s2 = <p class="df"><strong class="calibre13">hepatectomia</strong></p>
+    # type(s2) = <class 'bs4.element.Tag'>
+
+    # THIRD VERSION:
+    #print('MARK 1')
+    #p = soup.find('p', attrs={'class':'df'})
+    #print('p = ', p)
+    # p is None !
+    #for p in soup.find('p', attrs={'class':'df'}):
+    #    print('MARK 2')
+    #    print('p = ', p)
+    #    y = ''.join(child for child in p.children)
+    #print('MARK 3')
+    #print('y = ', y)
+
+    # FIRST VERSION WAS:
+    #y0 = soup.contents[0].contents[0].split(' ', 1)[0]
+    # FAILED RARELY
+    # SECOND VERSION WAS:
+    #y = soup.find('p', attrs={'class':'df'})
+    #y0 = y.text.split(' ', 1)[0]
+    # FAILED EVEN MORE
+
+    #print('MARK 4')
+    #y0 = y.text.split(' ', 1)[0]
+    #print('MARK 5')
+    #print('y0 = ', y0)
+
+    y0 = soup.contents[0].contents[0].split(' ', 1)[0]
     # Extract all words:
     y1 = ''
-    for child in y.children:
+    for child in soup.children:
         y1 += str(child)
+
+    # Extract all words:
+    #y1 = ''
+    #for child in y.children:
+    #    y1 += str(child)
     # Now substitute the words into:
     s = """
     <div><span><b>y0</b></span></div><span>y1.</span>
@@ -554,6 +600,22 @@ def strip_blanklines_bs(soup, verbose=False, features='lxml'):
         if verbose:
             print('No body found in BeautifulSoup body: pass')
         pass
+    return soup
+
+
+
+def strip_comment(soup):
+    """
+    Strip comment from BeautifulSoup object
+
+    Args:
+        soup (BeautifulSoup object): any soup
+    
+    Returns:
+        soup (BeautifulSoup object): with comments stripped out
+    """
+    f = soup.find_all(text=lambda text:isinstance(text, Comment))
+    [fi.extract() for fi in f]
     return soup
 
 
