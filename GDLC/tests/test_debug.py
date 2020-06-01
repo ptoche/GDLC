@@ -2,33 +2,10 @@
 This file is used for debugging doctest: Fill in with your own content
 
 >>> from GDLC.GDLC import *
-
-An html page with comments:
->>> html = '''
-... <?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml">
-... <head>
-... <title>Unknown</title>
-... <!-- Need to come up with a title! -->
-... </head>
-... <body>
-... <!-- Need to come up with better text! -->
-... BODY text that includes ■ and ñ 
-... </body>
-... </html>
-... '''
->>> soup = BeautifulSoup(html, features='lxml')
-
-Strip comments from a BeautifulSoup object by extracting:
->>> print(strip_comment(soup))
-<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-<title>Unknown</title>
-<BLANKLINE>
-</head>
-<body>
-<BLANKLINE>
-BODY text that includes ■ and ñ 
-</body>
-</html>
+>>> html = '<p class="df"><strong class="calibre13"><sup class="calibre23">3</sup>H</strong><sup class="calibre23">2</sup></p>'
+>>> soup = BeautifulSoup(html, features = 'lxml')
+>>> tag = soup.find('p', attrs={'class':'df'})
+>>> print(get_tag_content(tag))
+['H', '<strong class="calibre13">H</strong>']
 
 """

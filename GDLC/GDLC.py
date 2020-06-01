@@ -36,9 +36,9 @@ Created 3 May 2020
 
 @author: patricktoche
 """
-
 import os
 import re
+import pprint
 
 from bs4 import BeautifulSoup, Tag
 from bs4 import NavigableString, Comment
@@ -157,7 +157,7 @@ def get_head(html, features='lxml'):
 
 def loop_away(filelist, outdir=os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'tmp')), verbose=False, clean=False, features='lxml'):
     """ Loop over all files in a given directory""" 
-    print('\nOutput files will be saved in the following directory:\n\n', outdir, '\n\nSet `outdir` in function `loop_away` to change the default directory.\n\n')
+    print('\nOutput files will be saved in the following directory:\n\n', outdir, '\n\nSet `outdir` in function `loop_away` to change the default directory.')
     # if directory `tmp` does not exist, create it:
     from pathlib import Path
     Path('tmp').mkdir(parents=True, exist_ok=True)
@@ -171,7 +171,7 @@ def loop_away(filelist, outdir=os.path.abspath(os.path.join(os.path.dirname(os.p
         classes = ['calibre27']
         # get the header from the source file:
         try:
-            print('PROCESSING FILE:\n')
+            print('\n\nPROCESSING FILE:\n')
             with open(file, encoding='utf8') as infile:
                 head = get_head(infile, features=features)
             # open an infile to process input and an outfile to save the output:
@@ -219,8 +219,11 @@ def loop_away(filelist, outdir=os.path.abspath(os.path.join(os.path.dirname(os.p
             import traceback
             trace = traceback.format_exc()
             logging.error(trace)
-    print('\n\nALL FILES PROCESSED, BUT CHECK FOR ERRORS.')
-    print('\nThe following files raised an exception:', errors)
+    print('\n\nALL FILES PROCESSED, BUT CHECK THE LOGS FOR ANY ERRORS.')
+    if not errors:
+        print('\nGREAT NEWS: NO EXCEPTIONS RAISED!')
+    else:
+        print('\nThe following files raised an exception:', errors)
     return html
 
 
@@ -363,66 +366,47 @@ def make_label(soup):
 
 
 
-def make_word(soup):
+def get_tag_content(tag):
+    if not isinstance(tag, Tag):
+        print('get_tag_content() only accepts objects of type `Tag`')
+    # Suppress superscripts:
+    for sup in tag.find_all('sup'):
+        sup.decompose()
+    # Extract words:
+    y0 = tag.get_text()
+    # Extract first part of words:
+    y0 = y0.split(' ', 1)[0]
+    # Extract all words without superscripts:
+    y1 = ''
+    for child in tag.children:
+        y1 += str(child)
+    y1 = get_body(y1)
+    return [y0, y1]
+
+
+def make_word(tag):
     """
     Extracts header from dictionary entry. Uses second part of word definition. 
 
     Args:
-        soup (BeautifulSoup object): dictionary entry
+        tag (bs4.element.Tag): dictionary entry
 
     Returns:
         word (str): word used as the header of the dictionary entry
-    """
     
-    if not isinstance(soup, (BeautifulSoup, Tag)):
-        print('make_word() only accepts objects of type `BeautifulSoup`, `Tag`')
-    # BUG HERE
-    # typical form of s2:
-    # s2 = <p class="df"><strong class="calibre13">hepatectomia</strong></p>
-    # type(s2) = <class 'bs4.element.Tag'>
-
-    # THIRD VERSION:
-    #print('MARK 1')
-    #p = soup.find('p', attrs={'class':'df'})
-    #print('p = ', p)
-    # p is None !
-    #for p in soup.find('p', attrs={'class':'df'}):
-    #    print('MARK 2')
-    #    print('p = ', p)
-    #    y = ''.join(child for child in p.children)
-    #print('MARK 3')
-    #print('y = ', y)
-
-    # FIRST VERSION WAS:
-    #y0 = soup.contents[0].contents[0].split(' ', 1)[0]
-    # FAILED RARELY
-    # SECOND VERSION WAS:
-    #y = soup.find('p', attrs={'class':'df'})
-    #y0 = y.text.split(' ', 1)[0]
-    # FAILED EVEN MORE
-
-    #print('MARK 4')
-    #y0 = y.text.split(' ', 1)[0]
-    #print('MARK 5')
-    #print('y0 = ', y0)
-
-    y0 = soup.contents[0].contents[0].split(' ', 1)[0]
-    # Extract all words:
-    y1 = ''
-    for child in soup.children:
-        y1 += str(child)
-
-    # Extract all words:
-    #y1 = ''
-    #for child in y.children:
-    #    y1 += str(child)
+    Examples of tag:
+        <p class="df"><strong class="calibre13">hepatectomia</strong></p>
+        <p class="df"><strong class="calibre13"><sup class="calibre23">3</sup>H</strong><sup class="calibre23">2</sup></p>
+    """
+    # print_soup_info(soup)  # debugging
+    y0, y1 = get_tag_content(tag)
     # Now substitute the words into:
     s = """
     <div><span><b>y0</b></span></div><span>y1.</span>
     """
     s = s.replace('y0', y0, 1)
     s = s.replace('y1', y1, 1)
-    word = s.strip('\n')    
+    word = s.strip('\n')
     return word
 
 
@@ -465,6 +449,44 @@ def print_child_info(child):
     return None
 
 
+def print_soup_info(soup, name=None):
+    """
+    Print information about a BeautifulSoup object for degugging purposes.
+    """ 
+    info = {'name': None, 'type': None, 'class': None, 'content': None, 'children': None}
+    soup_name, soup_type, soup_class, soup_content, soup_children =  ([], ) * 5
+    try:
+        soup_name = soup.name
+    except Exception:
+        soup_name.append('NA')
+    try:
+        soup_type = type(soup)
+    except Exception:
+        soup_type.append('NA')
+    try:
+        soup_class = [i.text.strip() for i in soup.select('class')]
+    except Exception:
+        soup_class.append('NA')
+    try:
+        for si in soup.content:
+            soup_content.append(si)
+    except Exception:
+        soup_content.append('NA')
+    try:
+        if soup.findChildren(recursive=False):
+            soup_children = soup.findChildren(recursive=False)
+    except Exception:
+        soup_children.append('NA')
+    # add information to dictionary:
+    info.update({'name': soup_name, 'type': soup_type, 'content': soup_content, 'children': soup_children})
+    # print to console:
+    sep_line = '============================================================================='
+    print('\n\n INFORMATION REQUESTED:\n', sep_line, '\n') 
+    pprint.pprint(info, indent=0, width=80)
+    print('\n', sep_line, '\n\n')
+    # return the dictionary
+    return info
+
 
 def print_summary(docstring):
     """
@@ -485,7 +507,7 @@ def print_summary(docstring):
 
 def print_output(output):
     """
-    Print output to screen (useful for debugging).
+    Print output to screen surrounded by double lines (more visible, useful for debugging).
 
     Args: 
         input (str): any string
@@ -498,31 +520,7 @@ def print_output(output):
 
 
 
-def print_types(s1, s2, s3):
-    """
-    Print information about types. Accepts a tuple s1, s2, s3
-
-    Args: 
-        tuple (any type): any object
-
-    Returns: 
-        None
-
-    Note: function print_any_type() is more general. 
-    To do: remove it
-    """
-    print('Function split_defn() outputs a tuple s1, s2, s3 of type:\n')
-    print('type(s1) =', type(s1))
-    print('\n')
-    print('type(s2) =', type(s2))
-    print('\n')
-    print('type(s3) =', type(s3))
-    print('\n')
-    return None
-
-
-
-def print_any_type(*args):
+def print_type(*args):
     """
     Print information about types. 
 
@@ -650,7 +648,7 @@ def strip_header(xml):
     Returns:
         r (str): an xml page with xml header removed
 
-    To do: pass the header as a default, second argument
+    To do: pass the header as a default, second argument, in case there are situations with different version or encoding.
     """
     h = re.escape('<?xml version="1.0" encoding="utf-8"?>') # re.escape ? and .
     r = re.sub(h, '', xml, flags=re.IGNORECASE | re.MULTILINE)
@@ -714,7 +712,7 @@ def split_defn(soup, verbose=False, clean=False, features='lxml'):
         # 'bs4.element.Tag'
         s3 = strip_blanklines_bs(s3)
     if verbose:
-        print_types(s1, s2, s3)
+        print_type(s1, s2, s3)
     return s1, s2, s3
 
 

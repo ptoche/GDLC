@@ -3,7 +3,7 @@
 """
 Add the GDLC directory to your PYTHONPATH. 
 
-MacOS/Linus: open ~/.bash_profile and add the following:
+MacOS/Linux: open ~/.bashrc or ~/.zshrc  and add the following:
     export PYTHONPATH="/Users/username/GDLC"
 Or if you use Spyder, set it via python -> PYTHONPATH manager
 
@@ -13,6 +13,12 @@ Name the new variable PYTHONPATH and set its value to the directory path, e.g. "
 Check that your PYTHONPATH has been set properly with:
     import os
     os.environ['PYTHONPATH']
+
+Install the dependencies, including: beautifulsoup4, lxml, html5lib. For instance, for a conda environment named myenv, run:
+
+    conda install -n myenv beautifulsoup4 
+    conda install -n sp lxml
+    conda install -n sp html5lib
 
 Created 9 May 2020
 
