@@ -171,7 +171,7 @@ def loop_away(filelist, outdir=os.path.abspath(os.path.join(os.path.dirname(os.p
         classes = ['calibre27']
         # get the header from the source file:
         try:
-            print('\n\nPROCESSING FILE:\n')
+            print('\n\nPROCESSING FILE', filename, ':\n')
             with open(file, encoding='utf8') as infile:
                 head = get_head(infile, features=features)
             # open an infile to process input and an outfile to save the output:
@@ -224,7 +224,7 @@ def loop_away(filelist, outdir=os.path.abspath(os.path.join(os.path.dirname(os.p
         print('\nGREAT NEWS: NO EXCEPTIONS RAISED!')
     else:
         print('\nThe following files raised an exception:', errors)
-    return html
+    return None
 
 
 

@@ -145,9 +145,11 @@ filelist = make_names(filepath)
 
 # test with a smaller subset of files
 f = filelist[149:151]
-# xml = loop_away(f)  # the default output directory, `outdir` is set to `tmp`
-xml = loop_away(f, outdir)
+loop_away(f)  # the default output directory, `outdir` is set to `tmp`
 
 To do: Skip files 000-015 and 276-277
 To do: clean up these non-dictionary pages
 To do: generate a LookUp mobi file with definitions only + cover
+
+# When you're ready:
+loop_away(filelist, outdir)
