@@ -1,5 +1,5 @@
 """ 
-Extract the dictionary definition: Takes the third element s3 returned by `split_defn()`
+Extract the dictionary definition: Takes the third element s3 returned by `split_entry()`
 
 >>> from GDLC.GDLC import *
 >>> html = '''
@@ -9,7 +9,7 @@ Extract the dictionary definition: Takes the third element s3 returned by `split
 ... <p class="p">Even more details here.</p>
 ... </blockquote>'''
 >>> soup = BeautifulSoup(html, features='lxml')
->>> print(make_defn(soup))
+>>> print(make_definition(soup))
 <div><blockquote><span>Definition here.</span></blockquote>
 <blockquote><span>More details here.</span></blockquote>
 <blockquote><span>Even more details here.</span></blockquote></div>

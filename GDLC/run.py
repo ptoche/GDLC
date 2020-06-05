@@ -138,18 +138,30 @@ indir = os.path.join(os.path.sep, 'Users', 'PatrickToche', 'GDLC', 'source', 'GD
 # output directory with processed dictionary files:
 outdir = os.path.join(os.path.sep, 'Users', 'PatrickToche', 'GDLC', 'output', 'GDLC_processed', 'mobi8', 'OEBPS', 'Text')
 # source file:
-filepath = os.path.join(os.path.sep, indir, 'part0000.xhtml')
-# make_names(filepath, first = 16, last = 17)
+filename = os.path.join(os.path.sep, indir, 'part0000.xhtml')
+# list_files_range(filename, first = 16, last = 17)
 
-filelist = make_names(filepath)
+filelist = list_files_range(filename)
 
 # test with a smaller subset of files
 f = filelist[149:151]
 loop_away(f)  # the default output directory, `outdir` is set to `tmp`
 
-To do: Skip files 000-015 and 276-277
-To do: clean up these non-dictionary pages
-To do: generate a LookUp mobi file with definitions only + cover
+# Skip files 000-015 and 276-277
+f = filelist[16:277]
+f = filelist[16:277]
+f[0], f[-1]  # check first and last
 
 # When you're ready:
-loop_away(filelist, outdir)
+loop_away(f, outdir)
+
+# Copy files 000-015 and 276-277 from source
+f = filelist[0:16] + filelist[276:278]
+import shutil
+for file in f:
+    shutil.copy(file, outdir)
+
+# Make Kindle with Kindlegen
+make_kindle()
+
+

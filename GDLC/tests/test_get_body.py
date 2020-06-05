@@ -1,28 +1,47 @@
 """ 
-Extract the body from an html page, whether the page is formatted as string or BeautifulSoup object or Tag.
+Extract the body from an html page processed as BeautifulSoup object or Tag.
 
 >>> from GDLC.GDLC import *
 >>> html = '''
 ... <?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml">
 ... <head>
 ... <title>Unknown</title>
+... <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+... <link href="../Styles/style0001.css" rel="stylesheet" type="text/css"/>
+... <link href="../Styles/style0002.css" rel="stylesheet" type="text/css"/>
 ... </head>
 ... <body>
-... BODY
+... <blockquote class="calibre27">
+... <p class="rf">-&gt;AAA<sup class="calibre32">1</sup></p>
+... <p class="df"><code class="calibre22"><sup class="calibre23">■</sup><strong class="calibre13">AAA -bb</strong></code><sup class="calibre23">1</sup></p>
+... <p class="ps">Definition here.</p>
+... <p class="p">More details here.</p>
+... <p class="p">Even more details here.</p>
+... </blockquote>
 ... </body>
-... </html>'''
-
-From a string (the default):
->>> print(get_body(html))
-BODY
+... </html>
+... '''
 
 From a BeautifulSoup object:
 >>> soup = BeautifulSoup(html, features='lxml')
 >>> print(get_body(soup))
-BODY
+<blockquote class="calibre27">
+<p class="rf">-&gt;AAA<sup class="calibre32">1</sup></p>
+<p class="df"><code class="calibre22"><sup class="calibre23">■</sup><strong class="calibre13">AAA -bb</strong></code><sup class="calibre23">1</sup></p>
+<p class="ps">Definition here.</p>
+<p class="p">More details here.</p>
+<p class="p">Even more details here.</p>
+</blockquote>
 
 From a Tag object: 
->>> print(get_body(BeautifulSoup(html, features='lxml').find('body')))
-BODY
+>>> tag = soup.find('body')
+>>> print(get_body(tag))
+<blockquote class="calibre27">
+<p class="rf">-&gt;AAA<sup class="calibre32">1</sup></p>
+<p class="df"><code class="calibre22"><sup class="calibre23">■</sup><strong class="calibre13">AAA -bb</strong></code><sup class="calibre23">1</sup></p>
+<p class="ps">Definition here.</p>
+<p class="p">More details here.</p>
+<p class="p">Even more details here.</p>
+</blockquote>
 
 """

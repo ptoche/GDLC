@@ -12,7 +12,7 @@ Splits dictionary entry into three parts:
 ... </blockquote>
 ... '''
 >>> soup = BeautifulSoup(html, features='lxml')
->>> s1, s2, s3 = split_defn(soup)
+>>> s1, s2, s3 = split_entry(soup)
 
 The first element of the return tuple, s1, is used to make a label:
 >>> print(s1)
@@ -25,8 +25,6 @@ The second element of the return tuple, s2, is used to make a heading:
 The third element of the return tuple, s3, is used to make a definition
 >>> print(s3)
 <blockquote class="calibre27">
-<BLANKLINE>
-<BLANKLINE>
 <p class="ps">Definition here.</p>
 <p class="p">More details here.</p>
 <p class="p">Even more details here.</p>

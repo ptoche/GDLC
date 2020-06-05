@@ -1,5 +1,5 @@
 """
-This `test_template.py` file is intended to illustrate how doctest works and to alert to common pitfalls. Examples of errors include: 
+This `test_doctest.py` file is intended to illustrate how doctest works and to alert to common pitfalls. Examples of errors include: 
     indenting the code block below
     omitting an empty line in place of an empty result
     omitting an empty line to mark the end of a print display
