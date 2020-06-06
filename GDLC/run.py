@@ -127,41 +127,42 @@ from GDLC.tests import tests
 tests.test_examples(verbose=True)
 
 
-## SECTION IV: Using the GDLC package to make the dictionary
+## SECTION IV: Using the GDLC package to make the dictionary mobi files
 
 # Loop
 from GDLC.GDLC import *  # lazy and crazy
 
-# Make names and run loop
-# source directory with original dictionary files in `mobi8` `xhtml` format:
-indir = os.path.join(os.path.sep, 'Users', 'PatrickToche', 'GDLC', 'source', 'GDLC_unpacked', 'mobi8', 'OEBPS', 'Text')
-# output directory with processed dictionary files:
-outdir = os.path.join(os.path.sep, 'Users', 'PatrickToche', 'GDLC', 'output', 'GDLC_processed', 'mobi8', 'OEBPS', 'Text')
-# source file:
-filename = os.path.join(os.path.sep, indir, 'part0000.xhtml')
-# list_files_range(filename, first = 16, last = 17)
+# Make a list of selected filenames (example)
+# Usage: source directory with original dictionary files:
+infilepath = 'path/to/source/kindleunpacked/mobi8/OEBPS/Text/part0000.xhtml'
+list_files_range(infilepath, first = 16, last = 17)
 
-filelist = list_files_range(filename)
+# Make a list of all filenames to be processed:
+indir = os.path.join(os.path.sep, 'Users', 'PatrickToche', 'GDLC', 'source', 'GDLC_unpacked', 'mobi8', 'OEBPS', 'Text')
+outdir = os.path.join(os.path.sep, 'Users', 'PatrickToche', 'GDLC', 'output', 'GDLC_processed', 'mobi8', 'OEBPS', 'Text')
+infilepath = os.path.join(os.path.sep, indir, 'part0000.xhtml')
+outfilepath = os.path.join(os.path.sep, outdir, 'part0000.xhtml')
+infilelist = list_files_range(infilepath)
+outfilelist = list_files_range(outfilepath)
 
 # test with a smaller subset of files
-f = filelist[149:151]
-loop_away(f)  # the default output directory, `outdir` is set to `tmp`
+files = infilelist[149:151]
+loop_away(files)  # the default output directory is set to tmp
 
 # Skip files 000-015 and 276-277
-f = filelist[16:277]
-f = filelist[16:277]
-f[0], f[-1]  # check first and last
+files = infilelist[16:277]
+files[0], files[-1]  # check first and last
 
-# When you're ready:
-loop_away(f, outdir)
+# To loop, state explicit full path to source file (with extension), and full path to output directory (not files)
+loop_away(files=files, dir='/Users/PatrickToche/GDLC/output/GDLC_processed/mobi8/OEBPS/Text')
 
 # Copy files 000-015 and 276-277 from source
-f = filelist[0:16] + filelist[276:278]
+files= infilelist[0:16] + infilelist[276:278]
 import shutil
-for file in f:
+for file in files:
     shutil.copy(file, outdir)
 
-# Make Kindle with Kindlegen
+
+## SECTION V: Make Kindle with Kindlegen
+# TO DO!
 make_kindle()
-
-

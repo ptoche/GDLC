@@ -11,9 +11,9 @@ After conversion to the `azw` format via the `Calibre` plugin `KindleUnpack`, th
 The code loops through the blocks and formats them one at a time. The code may hopefully be adapted to other dictionaries, but almost certainly will not work without alterations. 
 
 Example:
-    A word definition may be converted to a lookup dictionary definition with
+    A dictionary entry may be converted to a lookup dictionary definition with
 
-        $ GDLC.dictionarize(html_string)
+        $ GDLC.make_entry(html_string)
 
     For more examples, see inside `run.py`
 
@@ -27,12 +27,12 @@ To Do:
     * Check code for parsers other than lxml
     * Check if all definitions are in blockquote with class calibre27
     * Check case of missing or malformed tags, e.g. with missing word or line-ending slash
-    * Test find_all instead of findChildren
+    * Test spacing near punctuation marks: eliminate instances of ' .' and ' ,'
     * Make the following functions:
     * get_word_class(): verb, noun, etc.
     * get_word_inflection(): tall, taller, tallest
     * get_word_pronunciation(): International Phonetic Alphabet 
-    * get_word_tag(): whether words are tagged with ■ or something else
+    * get_word_tag(): whether words are tagged with ■ or untagged
 
 Created 3 May 2020
 
@@ -46,22 +46,17 @@ from bs4 import BeautifulSoup, Tag
 from bs4 import NavigableString, Comment
 
 
+
 def clean_tags(soup):
     """
-    Remove certain tags: '<a', 'id', 'class' from BeautifulSoup object.
+    Strip certain classes from tags
 
     Args:
-        soup (bs4.BeautifulSoup): soup to clean
+        soup (BeautifulSoup): soup to clean
 
     Returns:
-        soup (bs4.BeautifulSoup)
+        soup (BeautifulSoup)
     """
-    # delete all '<a href' tags
-    for a in soup.find_all('a'):
-        a.replaceWithChildren()
-    # delete all id tags:
-    for i in soup.find_all('id'):        
-        i.replaceWithChildren()
     # delete all classes associated with <strong>:
     for strong in soup.find_all('strong'):
         del strong.attrs['class']
@@ -74,8 +69,114 @@ def clean_tags(soup):
     return(soup)
 
 
+# IN PROGRESS
+def clean_xml(xml, indent=4, method=None):
+    """
+    Take an xml file and return indented formatting. 
+    
+    Args:
+        xml (str): a correctly formatted, but not indented xml page
+        indent (num): size of the indent, defaults to 4
+        method (str): name of the module used, one of
+            'minidom': Uses minidom module from xml.dom library.
+            'etree': Uses etree module from lxml library.
+            'lxml': Uses the BeautifulSoup module from bs4 library and the lxml parser. 
 
-def dictionarize(item, verbose=False, clean=False, features='lxml'):
+    Return:
+        xml (str): an indented xml page
+    
+    Note: A wrapper around several modules, written to help selecting method and for debugging xml code.
+    """
+    if method == 'minidom':
+        return clean_xml_dom_minidom(xml, indent=indent)
+    if method == 'etree':
+        return clean_lxml_etree(xml)
+    if method == 'lxml':
+        return clean_bs4_lxml(xml)
+    return print('`clean_xml()` is a wrapper around several methods based on different libraries. No default method selected. Current choices are:  "minidom", "etree", "lxml"\n')
+
+
+# IN PROGRESS
+def clean_xml_dom_minidom(xml, indent=4):
+    """
+    Take an xml file and return indented formatting. 
+    Uses minidom module from xml.dom library.
+    """
+    from xml.dom import minidom
+    from xml.etree.cElementTree import Element, tostring
+    root = Element('root')
+    xml = minidom.parseString(tostring(root)).toprettyxml(indent=' '*indent)
+    return xml
+
+
+# IN PROGRESS
+def clean_lxml_etree(xml):
+    """
+    Take an xml file and return indented formatting. 
+    Uses etree module from lxml library.
+    """
+    from lxml import etree
+    parser = etree.XMLParser(resolve_entities=False, strip_cdata=False)
+    etree.set_default_parser(parser)
+    xml = etree.fromstring(xml)
+    xml = parse(xml, parser)
+    xml = parser.write(xml, pretty_print=True, xml_declaration=True, encoding='utf-8')
+    return xml
+
+
+# IN PROGRESS
+def clean_bs4_lxml(xml, indent=4):
+    """
+    Take an xml file and return indented formatting. 
+    Uses the BeautifulSoup module from bs4 library and the lxml parser.
+    """
+    # from bs4 import BeautifulSoup  # already imported
+    for line in xml: 
+        print(BeautifulSoup(line, features='lxml').prettify())
+    return xml
+
+
+# IN PROGRESS
+def clean_anchors(xml):
+    """
+    Take an xml file and recode anchor locations.
+    Anchors with hyphens can cause errors. 
+
+    TO DO
+    STEPS:
+    Make a list of every anchor in directory files. 
+    Make unique.
+    Make a list of replacement anchors.
+    Replace.
+    return xml
+
+    """
+
+
+
+def destroy_tags(soup:BeautifulSoup, *args:str):
+    '''
+    Remove tagged content for tags that the kindle does not support.
+
+    Args: 
+        soup (BeautifulSoup): html content with unsupported tags
+        args (str): name of the tags to be destroyed
+        usage: destroy_tag(soup, 'code', 'script')
+
+    Returns: 
+        soup (BeautifulSoup): original soup with selected tags destroyed
+    '''
+    tagz = ['script', 'style']
+    if args is not None:
+        tagz.extend(args)
+    for tag in tagz:
+        for item in soup.find_all(tag):
+            item.extract(strip=True)
+    return soup
+
+
+
+def make_entry(item, verbose=False, clean=False, features='lxml'):
     """
     Takes a well-formed block of html code and formats it to conform with the Kindle dictionary structure. 
 
@@ -91,7 +192,7 @@ def dictionarize(item, verbose=False, clean=False, features='lxml'):
     if not soup:
         return ''
     # Split dictionary entry into parts:
-    s1, s2, s3 = split_entry(soup, verbose=verbose, clean=clean, features=features)
+    s1, s2, s3 = split_entry(soup)
     if verbose:
         print_type(s1, s2, s3)
     # Extract label value for dictionary entry: 
@@ -172,21 +273,21 @@ def get_body(html, features='lxml'):
     Extract the body from an xml file. 
 
     Args:
-        html (str, bs4.BeautifulSoup, bs4.element.Tag): html page with head and body
+        html (str, BeautifulSoup, Tag): html page with head and body
     
     Returns:
         body (str): body of the html page
     """
     # all BeautifulSoup objects are also Tag objects, but not the converse, so check Beautifulsoup first
-    # if isinstance(html, Tag): intended to work even if body tag has class or id.
-    if isinstance(html, str):
-        soup = BeautifulSoup(html, features=features)
-    elif isinstance(html, BeautifulSoup):
+    if isinstance(html, BeautifulSoup):
         soup = html
     elif isinstance(html, Tag):
         soup = BeautifulSoup(str(html), features=features)
-    else:  # here for debugging purposes
-        raise ValueError('function get_body() expects a string, BeautifulSoup object or tag')
+    else:
+        try:
+            soup = BeautifulSoup(html, features=features)
+        except:  # here for debugging purposes
+            raise ValueError('function `get_body()` expects a string or a BeautifulSoup object')
     body = soup.find('body')
     body = ''.join(['%s' % x for x in body])
     body = re.sub(r'\n+', '\n', body).strip()  # .strip() removes leading/trailing blankspaces/newlines
@@ -199,17 +300,21 @@ def get_head(html, features='lxml'):
     Extract the head from an xml file. 
 
     Args:
-        html (str, bs4.BeautifulSoup, bs4.element.Tag): html page with head and body
+        html (str, BeautifulSoup, Tag): html page with head and body
 
     Returns:
         head (str): head of the html page
     """
-    if isinstance(html, str):
-        soup = BeautifulSoup(html, features=features)
-    elif isinstance(html, (BeautifulSoup, Tag)):
+    # all BeautifulSoup objects are also Tag objects, but not the converse, so check Beautifulsoup first
+    if isinstance(html, BeautifulSoup):
         soup = html
-    else:  # here for debugging purposes
-        raise ValueError('function get_head() expects a string, BeautifulSoup object or tag')
+    elif isinstance(html, Tag):
+        soup = BeautifulSoup(str(html), features=features)
+    else:
+        try:
+            soup = BeautifulSoup(html, features=features)
+        except:  # here for debugging purposes
+            raise ValueError('function `get_head()` expects a string or a BeautifulSoup object')
     body = soup.find('body')
     body.decompose()
     head = str(soup).strip()
@@ -219,16 +324,16 @@ def get_head(html, features='lxml'):
 
 def get_headword(tag):
     """
-    Extract the content of a BeautifulSoup object of type bs4.element.Tag
+    Extract the content of a BeautifulSoup object of type Tag
 
     Args:
-        tag (bs4.element.Tag): a BeautifulSoup tag, obtained by extracting from a soup
+        tag (Tag): a BeautifulSoup tag, obtained by extracting from a soup
 
     Returns:
         y0, y1 ([str]): short and long form of a word in dictionary definition
     """
     if not isinstance(tag, Tag):
-        print('get_headword() only accepts objects of type `Tag`')
+        print('`get_headword()` only accepts objects of type Tag')
     # suppress superscripts:
     for sup in tag.find_all('sup'):
         sup.decompose()
@@ -329,26 +434,31 @@ def list_files_ignore(ignore_list, dir):
 
 
 
-def loop_away(filelist, outdir=os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'tmp')), verbose=False, clean=False, features='lxml'):
+def loop_away(files, dir=os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'tmp')), verbose=False, clean=False, features='lxml'):
     """
     Loop over all files in a given directory.
 
     Args:
-        filelist ([str]): list of filenames (including path) to be processed
-        outdir (str): path to output directory
+        files ([str]): list of filenames (including path) to be processed
+        dir (str): path to output directory
 
     Returns:
         None
     """ 
-    print('\nOutput files will be saved in the following directory:\n\n', outdir, '\n\nSet `outdir` in function `loop_away` to change the default directory.')
+    from GDLC.queries.query import query_yes_no
+    validate = query_yes_no('You are about to start processing multiple dictionary files, potentially overwriting existing files. Do you want to proceed?')
+    if validate in ['no']:
+        return print('Loop aborted by user!')
+    else:
+        print('\nOutput files will be saved in the following directory:\n\n', dir, '\n\nSet `dir` in function `loop_away` to change the default directory.\n\nWARNING: Destination files will be overwritten.\n\n')
     # if directory `tmp` does not exist, create it:
     from pathlib import Path
     Path('tmp').mkdir(parents=True, exist_ok=True)
     # container to hold list of files that raise an error
     errors = []
-    for file in filelist:
+    for file in files:
         filename = os.path.basename(file)
-        outpath = os.path.join(outdir, filename)
+        outpath = os.path.join(dir, filename)
         # hard-coded names and classes of tags that contain definitions:
         names = ['blockquote']
         classes = ['calibre27']
@@ -373,9 +483,9 @@ def loop_away(filelist, outdir=os.path.abspath(os.path.join(os.path.dirname(os.p
                     # tags that contain dictionary definitions are processed:
                     # (`names` and `classes` are hard-coded lists defined above)
                     elif child.name in names and any(c in child['class'] for c in classes):
-                        # convert to string, feed to `dictionarize()`, and print:
+                        # convert to string, feed to `make_entry()`, and print:
                         s = str(child)
-                        s = dictionarize(s, verbose=verbose, clean=clean, features=features)
+                        s = make_entry(s, verbose=verbose, clean=clean, features=features)
                         s = s + '\n' # add empty line for clarity
                         print(s, file=outfile)
                     else:
@@ -402,9 +512,9 @@ def loop_away(filelist, outdir=os.path.abspath(os.path.join(os.path.dirname(os.p
             import traceback
             trace = traceback.format_exc()
             logging.error(trace)
-    print('\n\nALL FILES PROCESSED, BUT CHECK THE LOGS FOR ANY ERRORS.')
+    print('\n\nALL FILES PROCESSED: CHECK THE LOGS FOR ANY ERRORS.')
     if not errors:
-        print('\nGREAT NEWS: NO EXCEPTIONS RAISED!')
+        print('\nNO EXCEPTIONS WERE RECORDED!')
     else:
         print('\nThe following files raised an exception:', errors)
     return None
@@ -416,7 +526,7 @@ def make_definition(soup, verbose=False, clean=False):
     Extracts definition from dictionary entry.
 
     Args:
-        soup (bs4.BeautifulSoup): extracted portion of a word definition
+        soup (BeautifulSoup): extracted portion of a word definition
 
     Returns:
         defn (str): word definition reformatted to conform to desired html styles
@@ -485,14 +595,20 @@ def make_label(soup):
     Extracts a label from dictionary entry. Uses first part of word definition.
 
     Args:
-        soup (bs4.BeautifulSoup): dictionary entry
+        soup (BeautifulSoup): dictionary entry
 
     Returns:
         label (str): label used to identify the dictionary entry
     """
-    x = soup.find('body')
-    x = str(x)
+    # remove body if present
+    try: 
+        x = soup.find('body')
+    except:
+        pass
+    x = str(soup)
+    # remove arrows (2 methods that work in different cases)
     x = x.replace('->', '')
+    x = x.replace('-&gt;', '')
     # Now substitute the label into:
     s = """
     <idx:orth value="label">
@@ -512,7 +628,7 @@ def make_headword(tag):
     Extracts short and long header from dictionary entry and tag appropriately. 
 
     Args:
-        tag (bs4.element.Tag): dictionary entry
+        tag (Tag): dictionary entry
 
     Returns:
         word (str): word used as the header of the dictionary entry
@@ -521,7 +637,7 @@ def make_headword(tag):
         <p class="df"><strong class="calibre13">hepatectomia</strong></p>
         <p class="df"><strong class="calibre13"><sup class="calibre23">3</sup>H</strong><sup class="calibre23">2</sup></p>
     """
-    # print_soup_info(soup)  # debugging
+    # print_soup_info(soup)  # used for debugging
     y0, y1 = get_headword(tag)
     # Now substitute the words into:
     s = """
@@ -539,7 +655,7 @@ def print_children(soup):
     Print information about all children and descendents.
 
     Args: 
-        soup (bs4.BeautifulSoup): dictionary entry
+        soup (BeautifulSoup): dictionary entry
 
     Returns: 
         None
@@ -562,7 +678,7 @@ def print_child_info(child):
     Print information about each dictionary entry as a child of main soup.
 
     Args: 
-        child (bs4.BeautifulSoup): child of dictionary entry
+        child (BeautifulSoup): child of dictionary entry
 
     Returns: 
         None
@@ -683,15 +799,49 @@ def strip_black_square(soup):
     Remove special character '■' and associated tag from a dictionary definition. 
 
     Args:
-        soup (bs4.BeautifulSoup): a dictionary definition processed as a BeautifulSoup object
+        soup (BeautifulSoup): a dictionary definition processed as a BeautifulSoup object
 
     Returns:
-        soup (bs4.BeautifulSoup): argument with all instances of <sup>■</sup> removed 
+        soup (BeautifulSoup): argument with all instances of <sup>■</sup> removed 
     """    
     for x in soup.find_all('sup'):
         if '■' in x.get_text():
             x.extract(strip=True)
             break
+    return soup
+
+
+
+def strip_href(soup):
+    """
+    Remove hyperlink references used in building the index. 
+
+    Args:
+        soup (BeautifulSoup): soup to clean
+
+    Returns:
+        soup (BeautifulSoup)
+    """
+    # delete all '<a href' tags
+    for a in soup.find_all('a'):
+        a.replaceWithChildren()
+    return soup
+
+
+
+def strip_id(soup):
+    """
+    Remove id references inside tags. 
+
+    Args:
+        soup (BeautifulSoup): soup to clean
+
+    Returns:
+        soup (BeautifulSoup)
+    """
+    # delete all id tags:
+    for i in soup.find_all('id'):        
+        i.replaceWithChildren()
     return soup
 
 
@@ -759,10 +909,10 @@ def strip_comment(soup):
     Strip comment from BeautifulSoup object
 
     Args:
-        soup (bs4.BeautifulSoup): any soup
+        soup (BeautifulSoup): any soup
     
     Returns:
-        soup (bs4.BeautifulSoup): with comments stripped out
+        soup (BeautifulSoup): with comments stripped out
     """
     f = soup.find_all(text=lambda text:isinstance(text, Comment))
     [fi.extract(strip=True) for fi in f]
@@ -770,18 +920,17 @@ def strip_comment(soup):
 
 
 
-def strip_empty_tags(soup, strip_lines=False):
+def strip_empty_tags(soup:BeautifulSoup, strip_lines=False):
     """
     Remove empty tags from a BeautifulSoup object.
     If `strip_lines=True`, empty lines are also removed. 
     Argument `strip_lines` is passed down to `extract(strip=strip_lines)`
     
     Args: 
-        soup (bs4.BeautifulSoup): html content with empty tags
+        soup (BeautifulSoup): html content with empty tags
 
     Returns: 
-        soup (bs4.BeautifulSoup): original soup with empty tags removed
-
+        soup (BeautifulSoup): original soup with empty tags removed
     """
     for item in soup.find_all():
         if len(item.get_text(strip=True)) == 0:
@@ -790,7 +939,7 @@ def strip_empty_tags(soup, strip_lines=False):
 
 
 
-def strip_header(xml, header='<?xml version="1.0" encoding="utf-8"?>'):
+def strip_header(xml:str, header='<?xml version="1.0" encoding="utf-8"?>'):
     """
     Remove unwanted header introduced when using the `xml` parser
     using the re module to make case-insensitive replacement.
@@ -812,12 +961,12 @@ def strip_tag(soup:BeautifulSoup, *args:str):
     Remove tag from BeautifulSoup object
     
     Args: 
-        soup (bs4.BeautifulSoup): any soup with tags
+        soup (BeautifulSoup): any soup with tags
         args (str): name of the tags to be removed
         usage: strip_tag(soup, 'sup', 'sub')
         
     Returns:
-        soup (bs4.BeautifulSoup): soup without tags
+        soup (BeautifulSoup): soup without tags
     """
     for arg in args:
         f = soup.find_all(arg)
@@ -827,12 +976,12 @@ def strip_tag(soup:BeautifulSoup, *args:str):
 
 
 
-def split_entry(soup):
+def split_entry(soup:BeautifulSoup):
     """
     Splits dictionary entry into three parts. 
 
     Args:
-        soup (bs4.BeautifulSoup): A word definition processed by trim_entry()
+        soup (BeautifulSoup): A word definition processed by trim_entry()
 
     Returns:
         s1, s2, s3: A 3-tuple of BeautifulSoup objects.
@@ -897,7 +1046,9 @@ def trim_entry(item, verbose=False, clean=False, features='lxml'):
     soup.code.unwrap()
     # clean further upon request
     if clean:
-        clean_tags(soup)
+        soup = strip_href(soup)
+        soup = strip_id(soup)
+        soup = clean_tags(soup)
     return soup
 
 

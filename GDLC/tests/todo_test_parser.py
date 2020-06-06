@@ -11,7 +11,7 @@
   </blockquote>'''
 # 
 # Using parser 'html.parser' 
->>> print(dictionarize(test, clean=True, features='html.parser'))
+>>> print(make_entry(test, clean=True, features='html.parser'))
 <idx:entry scriptable="yes">
     <idx:orth value="AAA">
       <idx:infl>
@@ -27,7 +27,7 @@
 </idx:entry>
 # 
 # Using parser 'lxml'
->>> print(dictionarize(test, clean=True,, features='lxml'))
+>>> print(make_entry(test, clean=True,, features='lxml'))
 <idx:entry scriptable="yes">
     <idx:orth value="AAA">
       <idx:infl>
@@ -43,7 +43,7 @@
 </idx:entry>
 # 
 # Using parser 'html5lib'
->>> print(dictionarize(test, clean=True,, features='html5lib'))
+>>> print(make_entry(test, clean=True,, features='html5lib'))
 <idx:entry scriptable="yes">
     <idx:orth value="AAA">
       <idx:infl>

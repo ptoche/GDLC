@@ -27,6 +27,10 @@ def test_examples(verbose = False):
     r = doctest.testfile('test_clean_tags.py', optionflags=flags)
     a[0] += r[0] ; a[1] += r[1] 
 
+    if verbose: print('...testing examples in file test_destroy_tags.py')
+    r = doctest.testfile('test_destroy_tags.py', optionflags=flags)
+    a[0] += r[0] ; a[1] += r[1] 
+
     if verbose: print('...testing examples in file test_extract_patched.py')
     r = doctest.testfile('test_extract_patched.py', optionflags=flags)
     a[0] += r[0] ; a[1] += r[1] 
@@ -53,6 +57,10 @@ def test_examples(verbose = False):
 
     if verbose: print('...testing examples in file test_list_files_range.py')
     r = doctest.testfile('test_list_files_range.py')
+    a[0] += r[0] ; a[1] += r[1] 
+
+    if verbose: print('...testing examples in file test_make_entry.py')
+    r = doctest.testfile('test_make_entry.py')
     a[0] += r[0] ; a[1] += r[1] 
 
     if verbose: print('...testing examples in file test_make_definition.py')

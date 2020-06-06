@@ -9,7 +9,7 @@ Output similar to Real Acadamia Española azw format:
     <p class="p">More details here.</p>
     <p class="p">Even more details here.</p>
   </blockquote>'''
->>> print(dictionarize(test))
+>>> print(make_entry(test))
 <idx:entry scriptable="yes">
     <idx:orth value="AAA">
       <idx:infl>
@@ -25,7 +25,7 @@ Output similar to Real Acadamia Española azw format:
 </idx:entry>
 # 
 Output similar to Real Acadamia Española mobi format (class + id suppressed)
->>> print(dictionarize(test, clean=True))
+>>> print(make_entry(test, clean=True))
 <idx:entry scriptable="yes">
     <idx:orth value="AAA">
       <idx:infl>
@@ -47,7 +47,7 @@ Incomplete definition: missing class="rf"
     <p class="p">More details here.</p>
     <p class="p">Even more details here.</p>
   </blockquote>'''
->>> print(dictionarize(test))
+>>> print(make_entry(test))
 
 # 
 Incomplete definition: missing class="df"
@@ -57,14 +57,14 @@ Incomplete definition: missing class="df"
     <p class="p">More details here.</p>
     <p class="p">Even more details here.</p>
   </blockquote>'''
->>> print(dictionarize(test))
+>>> print(make_entry(test))
 
 # 
 Incomplete definition: missing class="ps" and class="p"
 >>> test = '''<blockquote class="calibre27">
     <p class="rf">-&gt;AAA<sup class="calibre32">1</sup></p>
     <p class="df"><code class="calibre22"><sup class="calibre23">■</sup><strong class="calibre13">AAA -bb</strong></code><sup class="calibre23">1</sup></p>'''
->>> print(dictionarize(test))
+>>> print(make_entry(test))
 <idx:entry scriptable="yes">
     <idx:orth value="AAA">
       <idx:infl>
@@ -82,7 +82,7 @@ Definition with unnecessary forward slash:
     <p class="df"><code class="calibre22"><strong class="calibre13">a/</strong></code></p>
     <p class="p"><em class="v">abrev</em> <strong class="calibre13">a l’atenció de.</strong></p>
   </blockquote>'''
->>> print(dictionarize(test))
+>>> print(make_entry(test))
 <idx:entry scriptable="yes">
     <idx:orth value="a/">
       <idx:infl>
@@ -143,7 +143,7 @@ A long dictionary entry:
 
     <p class="pc"><strong class="calibre34">IMPERATIU:</strong> abona, aboni, abonem, aboneu, abonin</p>
   </blockquote>'''
->>> print(dictionarize(test, clean=True))
+>>> print(make_entry(test, clean=True))
 <idx:entry scriptable="yes">
     <idx:orth value="abonar">
       <idx:infl>

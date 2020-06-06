@@ -17,7 +17,7 @@ with open(os.path.join(indir, name0)) as infile, open(os.path.join(indir, name1)
             e.decompose()
     b = body.findChildren(recursive=False)
     for x in b:
-        s = str(dictionarize(str(x)))
+        s = str(make_entry(str(x)))
         h = '<?xml version="1.0" encoding="utf-8"?>'
         s = s.replace(h, '')
         outfile.write(s)
