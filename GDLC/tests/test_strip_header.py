@@ -10,6 +10,7 @@ Strip the default header:
 ... <body>BODY</body>
 ... </html>
 ... '''
+
 >>> print(strip_header(xml))
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head><title>TITLE</title></head>
@@ -23,6 +24,7 @@ Strip a custom header:
 ... <body>BODY</body>
 ... </html>
 ... '''
+
 >>> print(strip_header(xml, header='<?xml version="1.0" encoding="UTF-16" standalone="no"?>'))
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head><title>TITLE</title></head>

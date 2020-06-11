@@ -1,28 +1,51 @@
 """ 
-Examples of pieces of html/xml/str code that ought to be successfully processed by module functions. 
+Examples of pieces of html/xml/xhtml markup that ought to be successfully processed by module functions. 
 
 # 1. Typical dictionary definition 
->>> html = '''
-... <?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml">
-... <head>
-... <title>Unknown</title>
-... <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
-... <link href="../Styles/style0001.css" rel="stylesheet" type="text/css"/>
-... <link href="../Styles/style0002.css" rel="stylesheet" type="text/css"/>
-... </head>
-... <body>
-... <blockquote class="calibre27">
-... <p class="rf">-&gt;AAA<sup class="calibre32">1</sup></p>
-... <p class="df"><code class="calibre22"><sup class="calibre23">■</sup><strong class="calibre13">AAA -bb</strong></code><sup class="calibre23">1</sup></p>
+>>> ml = '''<blockquote class="calibre27">
+... <p class="rf">-&gt;ABC<sup class="calibre32">1</sup></p>
+... <p class="df"><code class="calibre22"><sup class="calibre23">■</sup><strong class="calibre13">ABC -xy</strong></code><sup class="calibre23">1</sup></p>
 ... <p class="ps">Definition here.</p>
 ... <p class="p">More details here.</p>
 ... <p class="p">Even more details here.</p>
-... </blockquote>
-... </body>
-... </html>
-... '''
+... </blockquote>'''
+
 
 # 2. Typical dictionary definition 
-
+>>> ml = '''<blockquote class="salt10p" id="aid-J2B81">
+... <p class="rf">-&gt;acugular</p>
+... 
+... <p class="df"><code class="calibre22"><sup class="calibre23">■</sup><strong class="calibre13">acugular</strong></code></p>
+... 
+... <p class="ps">[probable reducció d’una forma derivada i dissimilada de <em class="calibre24">colgar</em>, <em class="calibre24">acolgolar</em>]</p>
+... 
+... <p class="p"><em class="v">v</em> <strong class="n">1</strong> <em class="v">tr</em> Disposar (el foc) de manera que, dificultant l’accés de l’aire, cremi amb ben poca intensitat, somortament, sense flama.</p>
+... 
+... <p class="p"><strong class="n">2</strong> <em class="v">pron</em> Cremar, el foc, somortament, mig apagar-se per insuficiència d’aire.</p>
+... 
+... <p class="tc"><strong class="calibre33">CONJUGACIÓ</strong></p>
+... 
+... <p class="pc"><strong class="calibre34">INFINITIU:</strong> acugular</p>
+... 
+... <p class="pc"><strong class="calibre34">GERUNDI:</strong> acugulant</p>
+... 
+... <p class="pc"><strong class="calibre34">PARTICIPI:</strong> acugulat, acugulada, acugulats, acugulades</p>
+... 
+... <p class="pc"><strong class="calibre34">INDICATIU PRESENT:</strong> acugulo, acugules, acugula, acugulem, acuguleu, acugulen</p>
+... 
+... <p class="pc"><strong class="calibre34">INDICATIU IMPERFET:</strong> acugulava, acugulaves, acugulava, acugulàvem, acugulàveu, acugulaven</p>
+... 
+... <p class="pc"><strong class="calibre34">INDICATIU PASSAT:</strong> acugulí, acugulares, acugulà, acugulàrem, acugulàreu, acugularen</p>
+... 
+... <p class="pc"><strong class="calibre34">INDICATIU FUTUR:</strong> acugularé, acugularàs, acugularà, acugularem, acugulareu, acugularan</p>
+... 
+... <p class="pc"><strong class="calibre34">INDICATIU CONDICIONAL:</strong> acugularia, acugularies, acugularia, acugularíem, acugularíeu, acugularien</p>
+... 
+... <p class="pc"><strong class="calibre34">SUBJUNTIU PRESENT:</strong> acuguli, acugulis, acuguli, acugulem, acuguleu, acugulin</p>
+... 
+... <p class="pc"><strong class="calibre34">SUBJUNTIU IMPERFET:</strong> acugulés, acugulessis, acugulés, acuguléssim, acuguléssiu, acugulessin</p>
+... 
+... <p class="pc"><strong class="calibre34">IMPERATIU:</strong> acugula, acuguli, acugulem, acuguleu, acugulin</p>
+... </blockquote>'''
 
 """

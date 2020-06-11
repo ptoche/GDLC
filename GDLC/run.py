@@ -20,6 +20,9 @@ Install the dependencies, including: beautifulsoup4, lxml, html5lib. For instanc
     conda install -n sp lxml
     conda install -n sp html5lib
 
+Install the progress bar (used in the main loop, can be turned off):
+    pip install progressbar2
+
 Created 9 May 2020
 
 @author: patricktoche
@@ -114,7 +117,7 @@ tests.test_examples(verbose=True)
 # To log errors, the logs sub-package must be invoked before running code. 
 from GDLC.logs.logs import custom_logs
 custom_logs()  # configures options for logging and prints the directory where logs will be saved
-xml = loop_away(f, outdir)
+xml = main_loop(f, outdir)
 # To obtain information about the `custom_logs` arguments, type:
 help(logs)
 
@@ -147,14 +150,14 @@ outfilelist = list_files_range(outfilepath)
 
 # test with a smaller subset of files
 files = infilelist[149:151]
-loop_away(files)  # the default output directory is set to tmp
+main_loop(files)  # the default output directory is set to tmp
 
 # Skip files 000-015 and 276-277
 files = infilelist[16:277]
 files[0], files[-1]  # check first and last
 
 # To loop, state explicit full path to source file (with extension), and full path to output directory (not files)
-loop_away(files=files, dir='/Users/PatrickToche/GDLC/output/GDLC_processed/mobi8/OEBPS/Text')
+main_loop(files=files, dir='/Users/PatrickToche/GDLC/output/GDLC_processed/mobi8/OEBPS/Text')
 
 # Copy files 000-015 and 276-277 from source
 files= infilelist[0:16] + infilelist[276:278]

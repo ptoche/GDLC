@@ -2,7 +2,7 @@
 Extract the body from an html page processed as BeautifulSoup object or Tag.
 
 >>> from GDLC.GDLC import *
->>> html = '''
+>>> ml = '''
 ... <?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml">
 ... <head>
 ... <title>Unknown</title>
@@ -11,37 +11,47 @@ Extract the body from an html page processed as BeautifulSoup object or Tag.
 ... <link href="../Styles/style0002.css" rel="stylesheet" type="text/css"/>
 ... </head>
 ... <body>
-... <blockquote class="calibre27">
-... <p class="rf">-&gt;AAA<sup class="calibre32">1</sup></p>
-... <p class="df"><code class="calibre22"><sup class="calibre23">■</sup><strong class="calibre13">AAA -bb</strong></code><sup class="calibre23">1</sup></p>
-... <p class="ps">Definition here.</p>
-... <p class="p">More details here.</p>
-... <p class="p">Even more details here.</p>
+... <blockquote class="calibre27" id="d34421">
+... <p class="rf">-&gt;ABC<sup class="calibre32">1</sup></p>
+... <p class="df"><code class="calibre22"><sup class="calibre23">■</sup><strong class="calibre13">ABC -xy</strong></code><sup class="calibre23">1</sup></p>
+... <p class="ps">Definition <em class="calibre24">here</em>.</p>
+... <p class="p">More details <span class="v1">here</span>.</p>
+... <p class="p">Even more details <a class="calibre17" href="part0120.xhtml#d34479">here</a>.</p>
 ... </blockquote>
 ... </body>
 ... </html>
 ... '''
 
+From a string:
+>>> print(get_body(ml))
+<blockquote class="calibre27" id="d34421">
+<p class="rf">-&gt;ABC<sup class="calibre32">1</sup></p>
+<p class="df"><code class="calibre22"><sup class="calibre23">■</sup><strong class="calibre13">ABC -xy</strong></code><sup class="calibre23">1</sup></p>
+<p class="ps">Definition <em class="calibre24">here</em>.</p>
+<p class="p">More details <span class="v1">here</span>.</p>
+<p class="p">Even more details <a class="calibre17" href="part0120.xhtml#d34479">here</a>.</p>
+</blockquote>
+
 From a BeautifulSoup object:
->>> soup = BeautifulSoup(html, features='lxml')
+>>> soup = BeautifulSoup(ml, features='lxml')
 >>> print(get_body(soup))
-<blockquote class="calibre27">
-<p class="rf">-&gt;AAA<sup class="calibre32">1</sup></p>
-<p class="df"><code class="calibre22"><sup class="calibre23">■</sup><strong class="calibre13">AAA -bb</strong></code><sup class="calibre23">1</sup></p>
-<p class="ps">Definition here.</p>
-<p class="p">More details here.</p>
-<p class="p">Even more details here.</p>
+<blockquote class="calibre27" id="d34421">
+<p class="rf">-&gt;ABC<sup class="calibre32">1</sup></p>
+<p class="df"><code class="calibre22"><sup class="calibre23">■</sup><strong class="calibre13">ABC -xy</strong></code><sup class="calibre23">1</sup></p>
+<p class="ps">Definition <em class="calibre24">here</em>.</p>
+<p class="p">More details <span class="v1">here</span>.</p>
+<p class="p">Even more details <a class="calibre17" href="part0120.xhtml#d34479">here</a>.</p>
 </blockquote>
 
 From a Tag object: 
 >>> tag = soup.find('body')
 >>> print(get_body(tag))
-<blockquote class="calibre27">
-<p class="rf">-&gt;AAA<sup class="calibre32">1</sup></p>
-<p class="df"><code class="calibre22"><sup class="calibre23">■</sup><strong class="calibre13">AAA -bb</strong></code><sup class="calibre23">1</sup></p>
-<p class="ps">Definition here.</p>
-<p class="p">More details here.</p>
-<p class="p">Even more details here.</p>
+<blockquote class="calibre27" id="d34421">
+<p class="rf">-&gt;ABC<sup class="calibre32">1</sup></p>
+<p class="df"><code class="calibre22"><sup class="calibre23">■</sup><strong class="calibre13">ABC -xy</strong></code><sup class="calibre23">1</sup></p>
+<p class="ps">Definition <em class="calibre24">here</em>.</p>
+<p class="p">More details <span class="v1">here</span>.</p>
+<p class="p">Even more details <a class="calibre17" href="part0120.xhtml#d34479">here</a>.</p>
 </blockquote>
 
 """

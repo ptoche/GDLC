@@ -1,8 +1,8 @@
 """
-This file tests a patch on the bs4.BeautifulSoup method extract()
+Remove empty tags.
 
 >>> from GDLC.GDLC import *
->>> html = '''<html>
+>>> ml = '''<html>
 ... <head>
 ...   <title>Unknown</title>
 ... </head>
@@ -14,7 +14,8 @@ This file tests a patch on the bs4.BeautifulSoup method extract()
 ...     <i></i> # COMMENT
 ...   </body>
 ... </html>'''
->>> soup = BeautifulSoup(html, features='lxml')
+>>> soup = BeautifulSoup(ml, features='lxml')
+
 >>> print(strip_empty_tags(soup, strip_lines=True))
 <html>
 <head>

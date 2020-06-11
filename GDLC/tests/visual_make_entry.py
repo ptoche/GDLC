@@ -3,20 +3,20 @@ Dictionarize typical word definitions
 
 Output similar to Real Acadamia Española azw format:
 >>> test = '''<blockquote class="calibre27">
-    <p class="rf">-&gt;AAA<sup class="calibre32">1</sup></p>
-    <p class="df"><code class="calibre22"><sup class="calibre23">■</sup><strong class="calibre13">AAA -bb</strong></code><sup class="calibre23">1</sup></p>
+    <p class="rf">-&gt;ABC<sup class="calibre32">1</sup></p>
+    <p class="df"><code class="calibre22"><sup class="calibre23">■</sup><strong class="calibre13">ABC -xy</strong></code><sup class="calibre23">1</sup></p>
     <p class="ps">Definition here.</p>
     <p class="p">More details here.</p>
     <p class="p">Even more details here.</p>
   </blockquote>'''
 >>> print(make_entry(test))
 <idx:entry scriptable="yes">
-    <idx:orth value="AAA">
+    <idx:orth value="ABC">
       <idx:infl>
-        <idx:iform name="" value="AAA"/>
+        <idx:iform name="" value="ABC"/>
       </idx:infl>
     </idx:orth>
-        <div><span><b>AAA</b></span></div><span><strong class="calibre13">AAA -bb</strong><sup class="calibre23">1</sup>.</span>
+        <div><span><b>ABC</b></span></div><span><strong class="calibre13">ABC -xy</strong><sup class="calibre23">1</sup>.</span>
     <div>
 <blockquote><span>Definition here.</span></blockquote>
 <blockquote><span>More details here.</span></blockquote>
@@ -27,12 +27,12 @@ Output similar to Real Acadamia Española azw format:
 Output similar to Real Acadamia Española mobi format (class + id suppressed)
 >>> print(make_entry(test, clean=True))
 <idx:entry scriptable="yes">
-    <idx:orth value="AAA">
+    <idx:orth value="ABC">
       <idx:infl>
-        <idx:iform name="" value="AAA"/>
+        <idx:iform name="" value="ABC"/>
       </idx:infl>
     </idx:orth>
-        <div><span><b>AAA</b></span></div><span><strong>AAA -bb</strong><sup>1</sup>.</span>
+        <div><span><b>ABC</b></span></div><span><strong>ABC -xy</strong><sup>1</sup>.</span>
     <div>
 <blockquote align="left"><span>Definition here.</span></blockquote>
 <blockquote align="left"><span>More details here.</span></blockquote>
@@ -42,7 +42,7 @@ Output similar to Real Acadamia Española mobi format (class + id suppressed)
 # 
 Incomplete definition: missing class="rf"
 >>> test = '''<blockquote class="calibre27">
-    <p class="df"><code class="calibre22"><sup class="calibre23">■</sup><strong class="calibre13">AAA -bb</strong></code><sup class="calibre23">1</sup></p>
+    <p class="df"><code class="calibre22"><sup class="calibre23">■</sup><strong class="calibre13">ABC -xy</strong></code><sup class="calibre23">1</sup></p>
     <p class="ps">Definition here.</p>
     <p class="p">More details here.</p>
     <p class="p">Even more details here.</p>
@@ -52,7 +52,7 @@ Incomplete definition: missing class="rf"
 # 
 Incomplete definition: missing class="df"
 >>> test = '''<blockquote class="calibre27">
-    <p class="rf">-&gt;AAA<sup class="calibre32">1</sup></p>
+    <p class="rf">-&gt;ABC<sup class="calibre32">1</sup></p>
     <p class="ps">Definition here.</p>
     <p class="p">More details here.</p>
     <p class="p">Even more details here.</p>
@@ -62,16 +62,16 @@ Incomplete definition: missing class="df"
 # 
 Incomplete definition: missing class="ps" and class="p"
 >>> test = '''<blockquote class="calibre27">
-    <p class="rf">-&gt;AAA<sup class="calibre32">1</sup></p>
-    <p class="df"><code class="calibre22"><sup class="calibre23">■</sup><strong class="calibre13">AAA -bb</strong></code><sup class="calibre23">1</sup></p>'''
+    <p class="rf">-&gt;ABC<sup class="calibre32">1</sup></p>
+    <p class="df"><code class="calibre22"><sup class="calibre23">■</sup><strong class="calibre13">ABC -xy</strong></code><sup class="calibre23">1</sup></p>'''
 >>> print(make_entry(test))
 <idx:entry scriptable="yes">
-    <idx:orth value="AAA">
+    <idx:orth value="ABC">
       <idx:infl>
-        <idx:iform name="" value="AAA"/>
+        <idx:iform name="" value="ABC"/>
       </idx:infl>
     </idx:orth>
-        <div><span><b>AAA</b></span></div><span><strong class="calibre13">AAA -bb</strong><sup class="calibre23">1</sup>.</span>
+        <div><span><b>ABC</b></span></div><span><strong class="calibre13">ABC -xy</strong><sup class="calibre23">1</sup>.</span>
     <div>
 </div>
 </idx:entry>
