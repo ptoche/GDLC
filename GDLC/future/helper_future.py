@@ -22,7 +22,7 @@ def test_future(verbose = True):
     a = [0,0]
     if verbose: 
       print('...testing examples in file future/helper_future.py')
-    r = doctest.testfile('test_read_head_future.py', optionflags=flags)
+    r = doctest.testfile('test_future.py', optionflags=flags)
     a[0] += r[0] ; a[1] += r[1] 
     return tuple(a)
 

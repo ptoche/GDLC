@@ -60,7 +60,7 @@ def validate_schema(doc_xml, schema_xml=None):
 
     :param `lxml.etree.Element` doc_xml: Handle to XML etree root node.
     """
-    doc_xml = deepcopy(doc_xml)
+    doc_dml = deepcopy(doc_xml)
 
     doc_new    = etree.Element(doc_xml.tag, nsmap={None: 'http://www.sii.cl/SiiDte'})
     doc_new[:] = doc_xml[:]                # move children into new root
@@ -74,9 +74,9 @@ def validate_schema(doc_xml, schema_xml=None):
         schema_pth = resolve_schema(doc_xml)
 
         with open(schema_pth, 'rb') as fh:
-            schema_xml = etree.parse(fh)
+            schema_dml = etree.parse(fh)
 
     schema = etree.XMLSchema(schema_xml)
-    schema.assertValid(xml)
+    schema.assertValid(dml)
 
     return True  # if no assertion gets thrown above, we can safely assume a `True` validity. 

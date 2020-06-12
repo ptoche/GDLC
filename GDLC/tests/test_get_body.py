@@ -2,7 +2,7 @@
 Extract the body from an html page processed as BeautifulSoup object or Tag.
 
 >>> from GDLC.GDLC import *
->>> ml = '''
+>>> dml = '''
 ... <?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml">
 ... <head>
 ... <title>Unknown</title>
@@ -23,7 +23,7 @@ Extract the body from an html page processed as BeautifulSoup object or Tag.
 ... '''
 
 From a string:
->>> print(get_body(ml))
+>>> print(get_body(dml))
 <blockquote class="calibre27" id="d34421">
 <p class="rf">-&gt;ABC<sup class="calibre32">1</sup></p>
 <p class="df"><code class="calibre22"><sup class="calibre23">■</sup><strong class="calibre13">ABC -xy</strong></code><sup class="calibre23">1</sup></p>
@@ -33,7 +33,7 @@ From a string:
 </blockquote>
 
 From a BeautifulSoup object:
->>> soup = BeautifulSoup(ml, features='lxml')
+>>> soup = BeautifulSoup(dml, features='lxml')
 >>> print(get_body(soup))
 <blockquote class="calibre27" id="d34421">
 <p class="rf">-&gt;ABC<sup class="calibre32">1</sup></p>

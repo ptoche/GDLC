@@ -41,6 +41,8 @@ Created 3 May 2020
 @author: patricktoche
 """
 import os
+import sys
+import io
 import pathlib
 import re
 
@@ -140,28 +142,85 @@ PageElement.extract = extract_patched
 
 
 
-def get_body(html, features='lxml'):
+def markup_handler(input, features='lxml'):
     """
-    Extract the body from an xml file. 
+    Directs input to BeautifulSoup parser based on input type. 
 
     Args:
-        html (str, BeautifulSoup, Tag): html page with head and body
-    
+        input (str, BeautifulSoup, Tag): path to file or actual content.
     Returns:
-        body (str): body of the html page
-    
-    Modules: bs4 (BeautifulSoup), re
+        soup (BeautifulSoup): BeautifulSoup object ready for further processing. 
+    Modules: 
+        bs4 (BeautifulSoup, Tag, NavigableString)
     """
-    # all BeautifulSoup objects are also Tag objects, but not the converse, so check Beautifulsoup first
-    if isinstance(html, BeautifulSoup):
-        soup = html
-    elif isinstance(html, Tag):
-        soup = BeautifulSoup(str(html), features=features)
+    # !all BeautifulSoup objects are also Tag objects, 
+        # but not the converse, 
+            # so check Beautifulsoup first!
+    # import Path module to handle a file path as input:
+    if 'Path' not in sys.modules:
+        from pathlib import Path
+    # set string variable to None:
+    string = None
+    # if no argument, return None:
+    if not input:
+        print('Function `markup_handler()` takes 1 argument. None detected.')
+        return None
+    # if argument is string, treat it as markup code:
+    elif isinstance(input, str):
+        string = input
+    # if argument is a BeautifulSoup, keep it as such:
+    elif isinstance(input, BeautifulSoup):
+        soup = input
+    # if argument is a Tag, convert it to a BeautifulSoup object:
+    elif isinstance(input, Tag):
+        string = str(input)
+    # if argument is a NavigableString, get the string:
+    elif isinstance(input, NavigableString):
+        string = input.string
+    # if argument is a path/to/file, read the file and make BeautifulSoup object:
+    # set maximum path length to 260 characters, like Windows does.
+    elif isinstance(input, str) and len(input)<260 and pathlib.Path(input).is_file():
+        with open(input, encoding='utf8') as infile:
+            soup = BeautifulSoup(infile, features=features)
+    # if none of the above, try anyway:
     else:
         try:
-            soup = BeautifulSoup(html, features=features)
+            soup = BeautifulSoup(input, features=features)
         except:  # here for debugging purposes
-            raise ValueError('function `get_body()` expects a string or a BeautifulSoup object')
+            raise ValueError('A string, NavigableString, Tag, or BeautifulSoup object was expected.')
+    # convert string to BeautifulSoup object:
+    if string:
+        soup = BeautifulSoup(string, features=features)
+    # return a BeautifulSoup object:
+    return soup
+
+
+
+def get_body(dml, features='lxml'):
+    """
+    Wrapper for document markup language.
+
+    Functions : 
+        `markup_handler()`, `get_body_from_soup()`.
+    """
+    soup = markup_handler(dml, features=features)
+    soup = get_body_from_soup(soup)
+    return soup
+
+
+
+def get_body_from_soup(soup:BeautifulSoup):
+    """
+    Read an xhtml/xml/html file and extracts the body.
+    Also tries to suppress excess blank lines. 
+
+    Args: 
+        soup (BeautifulSoup): markup language as BeautifulSoup object
+    Returns: 
+        body (str): <body> of the page
+    Modules: 
+        bs4 (BeautifulSoup), re
+    """
     body = soup.find('body')
     body = ''.join(['%s' % x for x in body])
     body = re.sub(r'\n+', '\n', body).strip()  # .strip() removes leading/trailing blankspaces/newlines
@@ -169,46 +228,55 @@ def get_body(html, features='lxml'):
 
 
 
-def get_doctype(soup):
+def get_doctype(dml, features='lxml'):
+    """
+    Wrapper for document markup language.
+
+    Functions : 
+        `markup_handler()`, `get_doctype_from_soup()`.
+    """
+    soup = markup_handler(dml, features=features)
+    soup = get_doctype_from_soup(soup)
+    return soup
+
+
+def get_doctype_from_soup(soup):
     '''
-    Extracts doctype from a page. Must import the entire bs4 module.
+    Extracts doctype from document markup language. 
+
+    Modules: 
+        bs4 (BeautifulSoup), bs4 (Doctype)
     '''
     items = [item for item in soup.contents if isinstance(item, bs4.Doctype)]
-    return items[0] if items else None
+    doctype = items[0] if items else None
+    return  doctype
 
 
 
-def get_head(file, features='lxml'):
+def get_head(dml, features='lxml'):
+    """
+    Wrapper for document markup language.
+
+    Functions : 
+        `markup_handler()`, `get_head_from_soup()`.
+    """
+    soup = markup_handler(dml, features=features)
+    soup = get_head_from_soup(soup)
+    return soup
+
+
+
+def get_head_from_soup(soup:BeautifulSoup):
     """
     Read an xhtml/xml/html file and extracts the head tag.
 
     Args: 
-        file (str, BeautifulSoup, Tag): path to file or actual content
+        input (BeautifulSoup): markup language as BeautifulSoup object
     Returns: 
-        head (str)
+        head (str): <head> of the page
+    Modules: 
+        bs4 (BeautifulSoup)
     """
-    # if no argument, return a default value:
-    if not file:
-        print('A path/to/file was not supplied. A default <head> string is returned.')
-        return default_head()
-    # if argument has a <head> tag, treat it as markup code:
-    elif isinstance(file, str) and file.find('<head'):
-        string = file
-    # if argument is a path/to/file, read the file and make BeautifulSoup object:
-    elif pathlib.Path(str(file)).is_file():
-        with open(file, encoding='utf8') as infile:
-            soup = BeautifulSoup(file, features=features)
-    # if argument is a BeautifulSoup Tag, convert it to a BeautifulSoup object:
-    elif isinstance(file, Tag):
-        string = str(file)
-    # if argument is a BeautifulSoup, keep it as such
-    elif isinstance(file, BeautifulSoup):
-        soup = file
-    # if none of the above, try anyway:
-    else:
-        soup = BeautifulSoup(file, features=features)
-    # if not already done, convert string to BeautifulSoup object
-    soup = BeautifulSoup(string, features=features)
     # get the head:
     head = soup.find('head')
     # convert to string:
@@ -251,12 +319,35 @@ def get_headword(tag):
 
 
 
-def get_root(soup):
+def get_pi(dml, features='lxml'):
+    """
+    Wrapper for document markup language.
+
+    Functions : 
+        `markup_handler()`, `get_pi_from_soup()`.
+    """
+    soup = markup_handler(dml, features=features)
+    soup = get_pi_from_soup(soup)
+    return soup
+
+
+
+def get_pi_from_soup(soup:BeautifulSoup):
     '''
-    Extracts root from a page. Must import the entire bs4 module.
+    Read an xhtml/xml/html file and extracts the processing instructions.
+
+    Args: 
+        soup (BeautifulSoup): markup language as BeautifulSoup object
+    Returns: 
+        pi (str): <processing instructions> of the page
+    Modules: 
+        bs4 (BeautifulSoup), bs4 (ProcessingInstruction)
+    Notes:
+        See `get_root()`
     '''
     items = [item for item in soup if isinstance(item, bs4.element.ProcessingInstruction)]
-    return items[0] if items else None
+    pi = items[0] if items else None
+    return pi
 
 
 
@@ -365,17 +456,13 @@ def make_entry(soup:BeautifulSoup, strip_tags=(), strip_attrs=None, strip_classe
     if not soup:
         return ''
     # trim dictionary entry:
-    # STOPPED HERE 
-    # TO DO: Check make_entry(), make_label(), make_headword()
-    # TO DO: Pass a list to the vararg function
-    #strip_tags = ()
     #strip_tags = list(strip_tags)
     #soup = strip_tags(soup, *strip_tags)
-#    soup = strip_attrs(soup, args=strip_attrs)
-#    soup = strip_classes(soup, args=strip_classes)
-#    soup = strip_chars(soup, args=strip_chars)
-#    if strip_comments:
-#        soup = strip_comments(soup)
+    #soup = strip_attrs(soup, args=strip_attrs)
+    #soup = strip_classes(soup, args=strip_classes)
+    #soup = strip_chars(soup, args=strip_chars)
+    #if strip_comments:
+    #    soup = strip_comments(soup)
     # Split dictionary entry into parts:
     s1, s2, s3 = split_entry(soup)
     if verbose:  # print to debug:
@@ -418,25 +505,25 @@ def main_loop(files, dir=None, tags=None, protected=None, classes=None, verbose=
     
     Debugging: print_child_info()
     """ 
-    # ask user to validate a job that can take a while and overwrite files:
-    from GDLC.queries.query import query_yes_no
-    validate = query_yes_no('You are about to start processing multiple dictionary files, potentially overwriting existing files. Do you want to proceed?')
-    if validate in ['no']:
-        return print('Loop aborted by user!')
-    else:
-        print('\nOutput files will be saved in the following directory:\n\n', dir, '\n\nSet `dir` in function `main_loop` to change the default directory.\n\nWARNING: Destination files will be overwritten.\n\n')
-    
-    # set up a progress bar for long jobs:
-    widgets = [progressbar.Percentage(), progressbar.Bar()]
-    bar = progressbar.ProgressBar(widgets=widgets, max_value=10).start()
-
     # set up output directory. If default directory `tmp` does not exist, create it:
     if not dir:
         dir = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'tmp'))
         from pathlib import Path
         Path('tmp').mkdir(parents=True, exist_ok=True)
-    else:
-        print('Your output files will be saved in ', dir, '\nMake sure an empty directory exists at the location!')
+    print('\nYour output files will be saved in ', dir, '\n')
+    print('Make sure a directory exists at the location.\n')
+    print('Set `dir` in function `main_loop` to change the default directory.\n')
+    print('WARNING: Destination files will be overwritten.\n')
+
+    # ask user to validate a job that can take a while and overwrite files:
+    from GDLC.queries.query import query_yes_no
+    validate = query_yes_no('You are about to start processing multiple dictionary files.\n\nExisting files will be overwritten!\n\nDo you want to proceed?\n')
+    if validate in ['no']:
+        return print('Loop aborted by user!')
+    
+    # set up a progress bar for long jobs:
+    widgets = [progressbar.Percentage(), progressbar.Bar()]
+    bar = progressbar.ProgressBar(widgets=widgets, max_value=10).start()
     
     # set up a container to hold a list of files that raise an error:
     errors = []
@@ -475,7 +562,7 @@ def main_loop(files, dir=None, tags=None, protected=None, classes=None, verbose=
                 for child in body.findChildren(recursive=False):
                     if progress:
                         # flush genuine progressbar to console:
-                        bar.update() 
+                        bar.update()
                     else:
                         # flush fake progressbar to console:
                         print('■', end='', flush=True)
@@ -486,14 +573,14 @@ def main_loop(files, dir=None, tags=None, protected=None, classes=None, verbose=
                         print(child, file=outfile)
                     # process tags that contain dictionary definitions (defined above):
                     elif child.name in tags and any(c in child['class'] for c in classes):
-                        print('DEBUG: child.name = ', child.name, '\n')
-                        print('DEBUG: child = ', child, '\n')
+                        #print('DEBUG: child.name = ', child.name, '\n')
+                        #print('DEBUG: child = ', child, '\n')
                         # convert tag????? to soup, feed to `make_entry()`, and print to file:
                         soup = BeautifulSoup(str(child), features=features)
-                        print('DEBUG: type(soup) = ', type(soup), '\n')
-                        print('DEBUG: soup = ', soup, '\n')
-                        s = make_entry(soup, verbose=verbose, clean=clean)
-                        print('DEBUG: type(post_make_entry) = ', type(s), '\n')
+                        #print('DEBUG: type(soup) = ', type(soup), '\n')
+                        #print('DEBUG: soup = ', soup, '\n')
+                        s = make_entry(soup, verbose=False)
+                        #print('DEBUG: type(post_make_entry) = ', type(s), '\n')
                         # remove xml header, if one was inserted by parser:
                         if features == 'xml':
                             s = strip_header(s)
@@ -702,14 +789,6 @@ def print_child_info(child):
     return None
 
 
-
-def print_function_name():
-    """
-    Return the name of the caller (function or method). 
-    
-    Modules: sys (_getframe)
-    """
-    return sys._getframe().f_code.co_name
 
 
 
@@ -1033,13 +1112,13 @@ def strip_empty_tags(soup:BeautifulSoup, strip_lines=False):
 
 
 
-def strip_header(xml:str, header='<?xml version="1.0" encoding="utf-8"?>'):
+def strip_header(dml:str, header='<?xml version="1.0" encoding="utf-8"?>'):
     """
-    Remove unwanted header introduced when using the `xml` parser
-    using the re module to make case-insensitive replacement.
+    Remove <xml> header using the re module to make case-insensitive replacement.
 
     Args: 
         xml (str): an xml page
+        header (str): a header, defaults to standard <xml> header.
         
     Returns:
         xml (str): an xml page with xml header removed
@@ -1047,8 +1126,8 @@ def strip_header(xml:str, header='<?xml version="1.0" encoding="utf-8"?>'):
     Modules: re
     """
     esc = re.escape(header) 
-    xml = re.sub(esc, '', xml, flags=re.IGNORECASE | re.MULTILINE).strip()
-    return xml
+    dml = re.sub(esc, '', dml, flags=re.IGNORECASE | re.MULTILINE).strip()
+    return dml
 
 
 

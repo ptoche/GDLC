@@ -43,6 +43,16 @@ def test_examples(verbose = False):
     r = doctest.testfile('test_get_headword.py')
     a[0] += r[0] ; a[1] += r[1] 
 
+#    TO DO: FIX IT
+#    if verbose: print('...testing examples in file test_get_html.py')
+#    r = doctest.testfile('test_get_html.py')
+#    a[0] += r[0] ; a[1] += r[1] 
+
+#    TO DO: FIX IT
+#    if verbose: print('...testing examples in file test_get_root.py')
+#    r = doctest.testfile('test_get_root.py')
+#    a[0] += r[0] ; a[1] += r[1] 
+
     if verbose: print('...testing examples in file test_list_files_all.py')
     r = doctest.testfile('test_list_files_all.py')
     a[0] += r[0] ; a[1] += r[1] 

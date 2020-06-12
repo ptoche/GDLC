@@ -6,7 +6,7 @@ However, the extraction process still leaves more white space than desired.
 A workaround is to filter the page as string and remove excess white spaces.
 
 >>> from GDLC.GDLC import *
->>> ml = '''
+>>> dml = '''
 ... <html>
 ... <head>
 ...   <title>Unknown</title>
@@ -16,7 +16,7 @@ A workaround is to filter the page as string and remove excess white spaces.
 ...     <div>Very <b>bold</b>.</div>
 ...   </body>
 ... </html>'''
->>> soup = BeautifulSoup(ml, features='lxml')
+>>> soup = BeautifulSoup(dml, features='lxml')
 >>> def test_extract(soup):
 ...     f = soup.find_all('b')
 ...     if f is not None:

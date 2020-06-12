@@ -3,7 +3,7 @@ Strip comments from BeautifulSoup object:
 
 An xml page with comments:
 >>> from GDLC.GDLC import *
->>> ml = '''<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+>>> dml = '''<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml">
 ... <head>
 ... <!-- Comment 1 -->
 ... <title>TITLE surrounded by comments</title>
@@ -17,7 +17,7 @@ An xml page with comments:
 ... </body>
 ... <!-- Comment 6 -->
 ... </html>'''
->>> soup = BeautifulSoup(ml, features='lxml')
+>>> soup = BeautifulSoup(dml, features='lxml')
 
 >>> print(strip_comments(soup))
 <?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml">

@@ -117,7 +117,7 @@ tests.test_examples(verbose=True)
 # To log errors, the logs sub-package must be invoked before running code. 
 from GDLC.logs.logs import custom_logs
 custom_logs()  # configures options for logging and prints the directory where logs will be saved
-xml = main_loop(f, outdir)
+dml = main_loop(f, outdir)
 # To obtain information about the `custom_logs` arguments, type:
 help(logs)
 

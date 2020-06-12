@@ -22,12 +22,12 @@ def query_yes_no(question, answer='no'):
     Return: 
         answer (str): 'yes' or 'no'
     """
-    if answer == None:
-        prompt = ' [y/n] '
+    if not answer:
+        prompt = '\n     [y/n]\n'
     elif answer == 'yes':
-        prompt = ' [y/N] '
+        prompt = '\n     [y/N]\n'
     elif answer == 'no':
-        prompt = ' [Y/n] '
+        prompt = '\n     [Y/n]\n'
     else:
         raise ValueError('invalid answer: "%s"' % answer)
 
@@ -38,10 +38,11 @@ def query_yes_no(question, answer='no'):
         sys.stdout.write(question + prompt)
         choice = input().lower()
         choice = choice.strip(string.punctuation+string.whitespace)
-        if answer is not None and choice == '':
+        if answer and choice == '':
             return answer
         elif choice in valid_answers.keys():
             return valid_answers[choice]
         else:
             sys.stdout.write('Please answer "yes" or "no" '\
                              '(or "y" or "n").\n')
+

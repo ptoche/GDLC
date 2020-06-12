@@ -2,7 +2,7 @@
 Splits dictionary entry into three parts:
 
 >>> from GDLC.GDLC import *
->>> ml = '''
+>>> dml = '''
 ... <blockquote class="calibre27">
 ... <p class="rf">HEADWORD: SHORT FORM</p>
 ... <p class="df">HEADWORD: LONG FORM</p>
@@ -10,7 +10,7 @@ Splits dictionary entry into three parts:
 ... <p class="p">SECONDARY DEFINITION</p>
 ... </blockquote>
 ... '''
->>> soup = BeautifulSoup(ml, features='lxml')
+>>> soup = BeautifulSoup(dml, features='lxml')
 >>> s1, s2, s3 = split_entry(soup)
 
 The first element of the return tuple, s1, is used to make a label:

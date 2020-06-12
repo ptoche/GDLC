@@ -2,7 +2,7 @@
 Remove empty tags.
 
 >>> from GDLC.GDLC import *
->>> ml = '''<html>
+>>> dml = '''<html>
 ... <head>
 ...   <title>Unknown</title>
 ... </head>
@@ -14,7 +14,7 @@ Remove empty tags.
 ...     <i></i> # COMMENT
 ...   </body>
 ... </html>'''
->>> soup = BeautifulSoup(ml, features='lxml')
+>>> soup = BeautifulSoup(dml, features='lxml')
 
 >>> print(strip_empty_tags(soup, strip_lines=True))
 <html>

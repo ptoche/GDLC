@@ -1,7 +1,4 @@
-"""
-This file is used for debugging doctest: Fill in with your own content
-
-
+""" 
 Extract the head from a html/xhtml/xml page.
 
 >>> from GDLC.GDLC import *

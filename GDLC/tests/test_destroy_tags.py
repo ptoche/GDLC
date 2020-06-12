@@ -2,7 +2,7 @@
 Strip tags from a BeautifulSoup object:
 
 >>> from GDLC.GDLC import *
->>> ml = '''<html>
+>>> dml = '''<html>
 ... <head>
 ...   <title>Unknown</title>
 ...   <script>This text is inside an invalid tag</script>
@@ -11,7 +11,7 @@ Strip tags from a BeautifulSoup object:
 ...     <p>This text is inside a valid tag</p><style>Invalid!</style><invalid>Invalid!</invalid>
 ...   </body>
 ... </html>'''
->>> soup = BeautifulSoup(ml, features = 'lxml')
+>>> soup = BeautifulSoup(dml, features = 'lxml')
 >>> print(destroy_tags(soup))
 <html>
 <head>

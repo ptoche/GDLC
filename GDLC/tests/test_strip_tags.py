@@ -2,7 +2,7 @@
 Strip tags (but not their content) from a BeautifulSoup object:
 
 >>> from GDLC.GDLC import *
->>> ml = '''<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+>>> dml = '''<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml">
 ... <head>
 ... <title>Unknown</title>
 ... <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
@@ -19,7 +19,7 @@ Strip tags (but not their content) from a BeautifulSoup object:
 ... </blockquote>
 ... </body>
 ... </html>'''
->>> soup = BeautifulSoup(ml, features='lxml')
+>>> soup = BeautifulSoup(dml, features='lxml')
 
 >>> print(strip_tags(soup, 'a', 'code', 'sup'))
 <?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml">

@@ -145,46 +145,6 @@ xmlns:idx="https://kindlegen.s3.amazonaws.com/AmazonKindlePublishingGuidelines.p
     return root
 
 
-def get_root(file:str, features='lxml'):
-    """
-    Read an xhtml/xml/html file and extracts the root tag.
-
-    Args: 
-        file (str, BeautifulSoup, Tag): path to file or actual content
-    Returns: 
-        root (str)
-    """
-    # list of root tags:
-    root_tags = ['html', 'xhtml', 'xml'] 
-    # if no argument, return a default value:
-    if not file:
-        print('A path/to/file was not supplied. A default <root> string is returned.')
-        return default_root()
-    # if argument has a <root> tag, treat it as markup code:
-    elif isinstance(file, str) and any(root in file for root in ['<' + i for i in root_tags]):
-        string = file
-    # if argument is a path/to/file, read the file and make BeautifulSoup object:
-    elif pathlib.Path(str(file)).is_file():
-        with open(file, encoding='utf8') as infile:
-            soup = BeautifulSoup(file, features=features)
-    # if argument is a BeautifulSoup Tag, convert it to a BeautifulSoup object:
-    elif isinstance(file, Tag):
-        string = str(file)
-    # if argument is a BeautifulSoup, keep it as such
-    elif isinstance(file, BeautifulSoup):
-        soup = file
-    # if none of the above, try anyway:
-    else:
-        soup = BeautifulSoup(file, features=features)
-    # if not already done, convert string to BeautifulSoup object
-    soup = BeautifulSoup(string, features=features)
-    # get the root:
-    root = soup.find(root_tags).name
-    # convert to string:
-    root = str(root).strip()
-    return root
-
-
 def make_id(text):
     """
     Loop through the entire dictionary and create unique IDs for each dictionary entry.
@@ -192,4 +152,88 @@ def make_id(text):
     # TO DO
     return text
 
+
+# TEST THIS:
+def print_function_name():
+    """
+    Return the name of the caller (function or method). 
+    
+    Modules: sys (_getframe)
+    """
+    if '_getframe' not in sys.modules:
+        from sys import _getframe
+    return sys._getframe().f_code.co_name
+
+
+
+
+def get_html_attrs(dml, features='lxml'):
+    """
+    Wrapper for document markup language.
+
+    Functions : 
+        `markup_handler()`, `get_html_attrs_from_soup()`.
+    """
+    soup = markup_handler(dml, features=features)
+    soup = get_html_attrs_from_soup(soup)
+    return soup
+
+
+def get_html_attrs_from_soup(soup:BeautifulSoup):
+    '''
+    Read an xhtml/xml/html file and extracts the <html> tag.
+
+    Args: 
+        soup (BeautifulSoup): markup language as BeautifulSoup object
+    Returns: 
+        attr (str): <processing instructions> of the page
+    Modules: 
+        bs4 (BeautifulSoup)
+    '''
+    # get the <html> tag and attributes:
+    attr = soup.find('html').attrs
+    return attr
+
+
+
+
+def get_root(dml, features='lxml'):
+    """
+    Wrapper for document markup language.
+
+    Functions : 
+        `markup_handler()`, `get_root_from_soup()`.
+    """
+    soup = markup_handler(dml, features=features)
+    soup = get_root_from_soup(soup)
+    return soup
+
+
+
+def get_root_from_soup(soup:BeautifulSoup):
+    """
+    Read an xhtml/xml/html file and extracts the root tag. 
+
+    Args: 
+        soup (BeautifulSoup): markup language as BeautifulSoup object
+    Returns: 
+        root (str): <root> of the page
+    Modules: 
+        bs4 (BeautifulSoup)
+    Note:
+        See also: `get_pi()`
+    """
+    # list of root tags:
+    root_tags = ['html', 'xhtml', 'xml'] 
+    # get the root:
+    tags = soup.find_all(root_tags)
+    if not tags:
+        return ''
+    for t in tags:
+        ''.join(str(t.contents))
+    # TO DO : FIX THIS!
+    # 'xml' not found
+    # 'html' is the whole document
+    # soup_find('html').attrs yields a list instead of properly formed tag ...
+    return root
 

@@ -2,7 +2,7 @@
 Extract the head from a html/xhtml/xml page.
 
 >>> from GDLC.GDLC import *
->>> ml = '''<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+>>> dml = '''<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml">
 ... <head>
 ... <title>Unknown</title>
 ... <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
@@ -21,7 +21,7 @@ Extract the head from a html/xhtml/xml page.
 ... </html>'''
 
 # From a string:
->>> print(get_head(ml))
+>>> print(get_head(dml))
 <head>
 <title>Unknown</title>
 <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
@@ -30,7 +30,7 @@ Extract the head from a html/xhtml/xml page.
 </head>
 
 # From a BeautifulSoup object:
->>> soup = BeautifulSoup(ml, features='lxml')
+>>> soup = BeautifulSoup(dml, features='lxml')
 >>> print(get_head(soup))
 <head>
 <title>Unknown</title>
@@ -40,7 +40,7 @@ Extract the head from a html/xhtml/xml page.
 </head>
 
 # From a Tag object:
->>> soup = BeautifulSoup(ml, features='lxml')
+>>> soup = BeautifulSoup(dml, features='lxml')
 >>> tag = soup.find('head')
 >>> print(get_head(tag))
 <head>
