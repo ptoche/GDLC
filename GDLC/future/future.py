@@ -4,6 +4,11 @@
 
 Untested functions and features. Work in progress.
 
+Notes:
+PageElement.extract() removes a tag or string from the tree. It returns the tag or string that was extracted:
+Tag.decompose() removes a tag from the tree, then completely destroys it and its contents:
+The behavior of a decomposed Tag or NavigableString is not defined and you should not use it for anything.
+
 To Do:
     * Check code for parsers other than lxml
     * Check if all definitions are in blockquote with class calibre27
@@ -19,11 +24,10 @@ Created 9 June 2020
 
 @author: patricktoche
 """
+
 import os
 import re
-
-from bs4 import BeautifulSoup, Tag
-from bs4 import NavigableString, Comment
+import bs4
 
 
 # IN PROGRESS
@@ -112,6 +116,33 @@ def validate_xml(xml:str):
 
 
 
+# Clean selected xml files:
+files = outfilelist[149:150]
+for file in files:
+    base, ext = os.path.splitext(file)
+    out = base+'_cleaned'+ext
+    with open(file, 'r') as infile, open(out, 'w') as outfile:
+        dml = clean_xml(infile, method='lxml')
+        print(dml, file=outfile)
+        #outfile.write(dml)
+        #print(dml, file=outfile)
+
+# Clean xml files inside Text directory:
+dir = '/Users/PatrickToche/GDLC/output/GDLC_processed/mobi8/OEBPS/Text'
+for root, dirs, files in os.walk(dir):
+    for file in files:
+        if file.endswith('.xhtml'):
+            base, ext = os.path.splitext(file)
+            out = base+'_cleaned'+ext
+            dml = clean_xml(os.path.join(root, file), method='lxml')
+            with open(out, 'w') as outfile:
+                    outfile.write(str(dml))
+
+
+
+
+
+
 # IN PROGRESS: TO DO
 def clean_anchors(xml):
     """
@@ -127,72 +158,12 @@ def clean_anchors(xml):
 
     """
 
-
-
-def default_root():
-    root = '''\
-<html xmlns:math="http://exslt.org/math" \
-xmlns:svg="http://www.w3.org/2000/svg" \
-xmlns:tl="https://kindlegen.s3.amazonaws.com/AmazonKindlePublishingGuidelines.pdf" \
-xmlns:saxon="http://saxon.sf.net/" \
-xmlns:xs="http://www.w3.org/2001/XMLSchema" \
-xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" \
-xmlns:cx="https://kindlegen.s3.amazonaws.com/AmazonKindlePublishingGuidelines.pdf" \
-xmlns:dc="http://purl.org/dc/elements/1.1/" \
-xmlns:mbp="https://kindlegen.s3.amazonaws.com/AmazonKindlePublishingGuidelines.pdf" \
-xmlns:mmc="https://kindlegen.s3.amazonaws.com/AmazonKindlePublishingGuidelines.pdf" \
-xmlns:idx="https://kindlegen.s3.amazonaws.com/AmazonKindlePublishingGuidelines.pdf">'''
-    return root
-
-
 def make_id(text):
     """
     Loop through the entire dictionary and create unique IDs for each dictionary entry.
     """
     # TO DO
     return text
-
-
-# TEST THIS:
-def print_function_name():
-    """
-    Return the name of the caller (function or method). 
-    
-    Modules: sys (_getframe)
-    """
-    if '_getframe' not in sys.modules:
-        from sys import _getframe
-    return sys._getframe().f_code.co_name
-
-
-
-
-def get_html_attrs(dml, features='lxml'):
-    """
-    Wrapper for document markup language.
-
-    Functions : 
-        `markup_handler()`, `get_html_attrs_from_soup()`.
-    """
-    soup = markup_handler(dml, features=features)
-    soup = get_html_attrs_from_soup(soup)
-    return soup
-
-
-def get_html_attrs_from_soup(soup:BeautifulSoup):
-    '''
-    Read an xhtml/xml/html file and extracts the <html> tag.
-
-    Args: 
-        soup (BeautifulSoup): markup language as BeautifulSoup object
-    Returns: 
-        attr (str): <processing instructions> of the page
-    Modules: 
-        bs4 (BeautifulSoup)
-    '''
-    # get the <html> tag and attributes:
-    attr = soup.find('html').attrs
-    return attr
 
 
 
@@ -236,4 +207,88 @@ def get_root_from_soup(soup:BeautifulSoup):
     # 'html' is the whole document
     # soup_find('html').attrs yields a list instead of properly formed tag ...
     return root
+
+
+
+
+
+
+
+
+###### 6 June 2020
+
+# IN PROGRESS: run a clean_xml action on the directory, clean_anchors
+
+# TO DO: MAKE FUNCTION TO SELECT PAGES TO PROCESS
+skip = [0:16]+[276:278]
+
+def make_range(arg*):
+    arg = map(int, arg.split(":"))
+    r = list(range(0,10000))
+    print ary[arg[0]:arg[1]]
+
+r = list(range(0,16))
+
+# Skip files 000-015 and 276-277
+f = filelist[16:277]
+f = filelist[16:277]
+
+# Copy files 000-015 and 276-277 from source
+f = filelist[0:16] + filelist[276:278]
+import shutil
+for file in f:
+    shutil.copy(file, outdir)
+
+
+
+
+
+
+if 'warn' not in sys.modules:
+    from warnings import warn
+
+
+# IN PROGRESS:
+def make_kindle():
+    """ 
+    Invoke kindlegen to build ebook from files.
+
+    /Users/patricktoche/kindlegen/KindleGen_Mac_i386_v2_9/kindlegen 
+
+    """ 
+
+
+
+
+
+>>> from GDLC.GDLC import *
+>>> dml = '''<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+... <head>
+... <title>TITLE</title>
+... </head>
+... <body>
+... <h1>A valid h1 tag <script>with an invalid script tag</script>.</h1>
+... <div><script>An invalid script tag inside a valid div tag.</script></div>
+... </body>
+... </html>'''
+>>> soup = BeautifulSoup(dml, features='lxml')
+
+
+
+
+# IN PROGRESS
+>>> soup = BeautifulSoup(dml, features='lxml')
+
+>>> soup.find('html').attrs
+
+>>> from bs4 import NavigableString as ns
+>>> namespaces = {}
+>>> for attr in soup.find('html').attrs:
+>>>     if attr.startswith("xmlns") or ":" in attr:
+            namespaces[attr] = soup.find('html')[attr].split(" ")
+
+>>> [tag.attrs for tag in soup.find_all('html') if not ns]
+
+
+soup.find_all(['h{}'.format(i) for i in range(1,7)])
 

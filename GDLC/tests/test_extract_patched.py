@@ -9,7 +9,7 @@ A workaround is to filter the page as string and remove excess white spaces.
 >>> dml = '''
 ... <html>
 ... <head>
-...   <title>Unknown</title>
+...   <title>TITLE</title>
 ... </head>
 ...   <body>
 ...     <div>Some <b>bold</b> statement.</div>
@@ -27,7 +27,7 @@ A workaround is to filter the page as string and remove excess white spaces.
 >>> print(test_extract(soup))
 <html>
 <head>
-<title>Unknown</title>
+<title>TITLE</title>
 </head>
 <body>
 <div>Some  statement.</div>

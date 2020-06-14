@@ -5,7 +5,7 @@ Make an html page from body and head:
 >>> head = '''
 ... <?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml">
 ... <head>
-... <title>Unknown</title>
+... <title>TITLE</title>
 ... <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
 ... <link href="../Styles/style0001.css" rel="stylesheet" type="text/css"/>
 ... <link href="../Styles/style0002.css" rel="stylesheet" type="text/css"/>
@@ -21,10 +21,10 @@ Make an html page from body and head:
 ... <p class="p">Even more details here.</p>
 ... </blockquote>'''
 
->>> print(make_html(body, head))
+>>> print(make_dml(body, head))
 <?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<title>Unknown</title>
+<title>TITLE</title>
 <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
 <link href="../Styles/style0001.css" rel="stylesheet" type="text/css"/>
 <link href="../Styles/style0002.css" rel="stylesheet" type="text/css"/>

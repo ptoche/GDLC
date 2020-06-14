@@ -4,7 +4,7 @@ Remove empty tags.
 >>> from GDLC.GDLC import *
 >>> dml = '''<html>
 ... <head>
-...   <title>Unknown</title>
+...   <title>TITLE</title>
 ... </head>
 ...   <body>LOOSE TEXT
 ...     <a></a>
@@ -19,7 +19,7 @@ Remove empty tags.
 >>> print(strip_empty_tags(soup, strip_lines=True))
 <html>
 <head>
-<title>Unknown</title>
+<title>TITLE</title>
 </head>
 <body>LOOSE TEXT
     <div>BODY</div> # COMMENT

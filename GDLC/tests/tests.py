@@ -23,35 +23,54 @@ def test_examples(verbose = False):
     a = [0,0]
     r = [0,0]
 
+    if verbose: print('...testing examples in file test_default_copy.py')
+    r = doctest.testfile('test_default_copy.py', optionflags=flags)
+    a[0] += r[0] ; a[1] += r[1]
+
+    if verbose: print('...testing examples in file test_default_head.py')
+    r = doctest.testfile('test_default_head.py', optionflags=flags)
+    a[0] += r[0] ; a[1] += r[1]
+
+    if verbose: print('...testing examples in file test_default_root.py')
+    r = doctest.testfile('test_default_root.py', optionflags=flags)
+    a[0] += r[0] ; a[1] += r[1]
+
     if verbose: print('...testing examples in file test_destroy_tags.py')
     r = doctest.testfile('test_destroy_tags.py', optionflags=flags)
-    a[0] += r[0] ; a[1] += r[1] 
+    a[0] += r[0] ; a[1] += r[1]
 
     if verbose: print('...testing examples in file test_extract_patched.py')
     r = doctest.testfile('test_extract_patched.py', optionflags=flags)
-    a[0] += r[0] ; a[1] += r[1] 
+    a[0] += r[0] ; a[1] += r[1]
 
     if verbose: print('...testing examples in file test_get_body.py')
     r = doctest.testfile('test_get_body.py')
-    a[0] += r[0] ; a[1] += r[1] 
+    a[0] += r[0] ; a[1] += r[1]
+    
+    if verbose: print('...testing examples in file test_get_function_name.py')
+    r = doctest.testfile('test_get_function_name.py')
+    a[0] += r[0] ; a[1] += r[1]
 
     if verbose: print('...testing examples in file test_get_head.py')
     r = doctest.testfile('test_get_head.py')
-    a[0] += r[0] ; a[1] += r[1] 
+    a[0] += r[0] ; a[1] += r[1]
 
     if verbose: print('...testing examples in file test_get_headword.py')
     r = doctest.testfile('test_get_headword.py')
     a[0] += r[0] ; a[1] += r[1] 
 
-#    TO DO: FIX IT
-#    if verbose: print('...testing examples in file test_get_html.py')
-#    r = doctest.testfile('test_get_html.py')
-#    a[0] += r[0] ; a[1] += r[1] 
+    if verbose: print('...testing examples in file test_get_html_attrs.py')
+    r = doctest.testfile('test_get_html_attrs.py')
+    a[0] += r[0] ; a[1] += r[1] 
 
 #    TO DO: FIX IT
 #    if verbose: print('...testing examples in file test_get_root.py')
 #    r = doctest.testfile('test_get_root.py')
 #    a[0] += r[0] ; a[1] += r[1] 
+
+    if verbose: print('...testing examples in file test_get_sorted_id.py')
+    r = doctest.testfile('test_get_sorted_id.py')
+    a[0] += r[0] ; a[1] += r[1] 
 
     if verbose: print('...testing examples in file test_list_files_all.py')
     r = doctest.testfile('test_list_files_all.py')
@@ -65,10 +84,26 @@ def test_examples(verbose = False):
     r = doctest.testfile('test_list_files_range.py')
     a[0] += r[0] ; a[1] += r[1] 
 
+    if verbose: print('...testing examples in file test_list_invalid_tags.py')
+    r = doctest.testfile('test_list_invalid_tags.py')
+    a[0] += r[0] ; a[1] += r[1] 
+
+    if verbose: print('...testing examples in file test_list_invalid_tags_kf8.py')
+    r = doctest.testfile('test_list_invalid_tags_kf8.py')
+    a[0] += r[0] ; a[1] += r[1] 
+
+    if verbose: print('...testing examples in file test_list_valid_tags.py')
+    r = doctest.testfile('test_list_valid_tags.py')
+    a[0] += r[0] ; a[1] += r[1]
+
     if verbose: print('...testing examples in file test_make_definition.py')
     r = doctest.testfile('test_make_definition.py')
     a[0] += r[0] ; a[1] += r[1] 
 
+    if verbose: print('...testing examples in file test_make_dml.py')
+    r = doctest.testfile('test_make_dml.py')
+    a[0] += r[0] ; a[1] += r[1] 
+    
     if verbose: print('...testing examples in file test_make_entry.py')
     r = doctest.testfile('test_make_entry.py')
     a[0] += r[0] ; a[1] += r[1] 
@@ -77,12 +112,12 @@ def test_examples(verbose = False):
     r = doctest.testfile('test_make_headword.py')
     a[0] += r[0] ; a[1] += r[1] 
 
-    if verbose: print('...testing examples in file test_make_html.py')
-    r = doctest.testfile('test_make_html.py')
-    a[0] += r[0] ; a[1] += r[1] 
-
     if verbose: print('...testing examples in file test_make_label.py')
     r = doctest.testfile('test_make_label.py')
+    a[0] += r[0] ; a[1] += r[1] 
+
+    if verbose: print('...testing examples in file test_markup_handler.py')
+    r = doctest.testfile('test_markup_handler.py')
     a[0] += r[0] ; a[1] += r[1] 
 
     # todo:

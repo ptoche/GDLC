@@ -41,7 +41,7 @@ from GDLC import GDLC  # I can then call `GDLC.tests`
                        # it's `GDLC.GDLC.tests`
 
 # Explore the package contents:
-dir(GDLC)            # lists all available directories
+dir(GDLC)            # lists all files made available via the GDLC module, including external imports
 help(GDLC)           # prints package contents
 print(GDLC.__doc__)  # prints the package docstrings
                      # worked initially, now returns None.

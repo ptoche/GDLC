@@ -5,7 +5,7 @@ An html page with too many white spaces:
 >>> from GDLC.GDLC import *
 >>> dml = '''<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml">
 ... <head>
-... <title>Unknown</title>
+... <title>TITLE</title>
 ... </head>
 ... <body>
 ... <blockquote>
@@ -20,7 +20,7 @@ Strip white spaces from a string:
 >>> print(strip_spaces(dml))
 <?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<title>Unknown</title>
+<title>TITLE</title>
 </head>
 <body>
 <blockquote>
@@ -36,7 +36,7 @@ Strip white spaces from a BeautifulSoup object:
 >>> print(strip_spaces(soup))
 <?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<title>Unknown</title>
+<title>TITLE</title>
 </head>
 <body>
 <blockquote>
