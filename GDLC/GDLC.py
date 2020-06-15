@@ -28,7 +28,7 @@ Example:
     Log files are saved in the `logs` directory.  See `logs/logs.py` for details. 
     Elements involving interaction with the user are in the `queries` directory. See `queries/query.py` for details. 
     Future developments and work in progress are in the `future` directory. See `future/future.py` for details.
-    There is no documentation for this project. Limited info may be found in the `docs` directory and inside docstrings. 
+    There is no proper documentation for this project. Limited information may be found in the `docs` directory and inside docstrings. As the project evolves, some information may have become obsolete, beware. 
 
 Args:
     verbose, clean, and features are common arguments of several functions. Their description is not repeated inside each function. 
@@ -56,17 +56,18 @@ Created 3 May 2020
 """
 import os
 import sys
+from pathlib import Path, PosixPath
 import io
-import pathlib
 import re
+from shutil import copy2  # shutil.copy2 copies metadata+permissions
 
-import bs4
-from bs4 import BeautifulSoup, Tag, NavigableString, Comment
+from bs4 import BeautifulSoup, Tag, NavigableString, Comment, PageElement
 
-import pprint
+from pprint import pprint
 import progressbar  # !!  progressbar2 under the hood
 
-
+import logging
+import traceback
 
 def copy_dirtree(indir, outdir, onerror=None):
     """ 
@@ -98,44 +99,64 @@ def copy_dirtree(indir, outdir, onerror=None):
     return [indir, outdir]
 
 
-def copy_files(files=[], dir=None, source=None, mkdir=False):
-    """ 
-    Copy files in given list to selected directory. 
-    Destination directory will be created if it does not exist. 
+def dir_handler(dir=None, mkdir=False):
+    """
+    Checks existence of a given directory and creates it upon request.
 
+    Args:
+        dir (str): path to directory
+        mkdir (bool): if True, create the directory
+    Returns:
+        None
     Modules: 
-        pathlib (Path), shutil (copy2), warnings (warn)
-    Functions: 
-        `default_copy()`
-    """ 
-    import sys
-    if 'copy2' not in sys.modules:
-        from shutil import copy2  # shutil.copy2 copies metadata+permissions
-    if 'Path' not in sys.modules:
-        from pathlib import Path, PosixPath
+        pathlib (Path)
+    """
     if dir:
         dir = Path(dir).expanduser()
-    # set up a default directory to copy the files to if none is supplied:
-    if not dir:
+        # abort if the directory does not exist:
+        if not dir.is_dir():
+            # abort if no directory given and mkdir set to False:
+            if not mkdir:
+                return print('Aborting. No directory found at destination. The specified dir argument must be a valid directory. To create the directory, set `mkdir=True`.\n\nExample of usage: `copy_files(dir="~/tmp", mkdir=True)`')
+            else:
+                Path(dir).mkdir(parents=True)
+    # if no directory is given, set up a default location:
+    else:
         # get the user's home directory:
         home = Path.home()
         dir = home / 'tmp'
-    # abort if the directory is invalid:
-    if not dir.is_dir():
-        return print('Aborting. The specified dir argument must be a valid directory.\nExample of usage: `copy_files(dir = "~/tmp")`\nIf the directory does not exist, it will be created if `mkdir=True`.')
-    # abort if the directory does not exist:
-    if not dir.exists():
         if not mkdir:
-            return print('Aborting. No directory found at destination. To create directory, set `mkdir=True`.')
+            return print('Aborting. No directory given. To create a directory, set `mkdir=True`.')
         else:
             Path(dir).mkdir(parents=True)
+    return dir
+
+
+def copy_files(files=[], dir=None, source=None, mkdir=False):
+    """ 
+    Copy files in given list to selected directory. 
+    Destination directory will be created if it does not exist.
+
+    Args:
+        files ([str]): list of files to be copied
+        dir (str): a destination directory
+        source (str): a source directory may be given instead of a list of file paths
+        mkdir (bool): if True, create the specified directory
+    Modules: 
+        shutil (copy2)
+    Functions: 
+        `default_copy()`, `dir_handler()`
+    """
+    # set or create a destination directory
+    dir = dir_handler(dir, mkdir=mkdir)
     # if no files given, get the default list:
     if not files:
         if not source:
+            home = Path.home()
             source = home / 'GDLC/source/GDLC_unpacked'
         files = default_copy(dir=source)
     # copy files to destination:
-    print('\nThe following files are being copied:\n')
+    print('\nGetting ready to copy files to destination directory.\n')
     copies = []
     for file in files:
         # ensure files are of type PosixPath:
@@ -167,10 +188,7 @@ def default_copy(dir=None):
         The following directories remain empty: HDImages, mobi8/OEBPS/Fonts 
         An alternative is to copy the entire source directory!
     """
-    # make sure the pathlib.Path module is imported:
-    import sys
-    if 'Path' not in sys.modules:
-        from pathlib import Path
+    # make sure the directory exists:
     if not dir:
         return print('Aborting. A directory for source files must be supplied')
     else:
@@ -252,7 +270,9 @@ def destroy_tags(soup:BeautifulSoup, *args:str):
 
 
 # PATCH for BeautifulSoup extract() method
-from bs4 import PageElement
+# import PageElement if it has not been imported already
+if 'PageElement' not in sys.modules:
+    from bs4 import PageElement
 def extract_patched(self, _self_index=None, strip=False):
     """A patched version of the BeautifulSoup `.extract()` method. 
     Optional argument `strip=True` suppresses empty lines. 
@@ -332,9 +352,6 @@ def markup_handler(input, invalid_types=[], features='lxml'):
     # !all BeautifulSoup objects are also Tag objects, 
         # but not the converse, 
             # so check Beautifulsoup first!
-    # import Path module to handle a file path as input:
-    if 'Path' not in sys.modules:
-        from pathlib import Path
     # set string variable to None:
     string = None
     # if no argument, return None:
@@ -443,6 +460,7 @@ def get_function_name():
     
     Modules: sys (_getframe)
     """
+    # An obscure import, so keeping it inside the function
     if '_getframe' not in sys.modules:
         from sys import _getframe
     return sys._getframe().f_code.co_name
@@ -539,6 +557,61 @@ def get_html_attrs_from_soup(soup:BeautifulSoup):
     # get the <html> tag and attributes:
     attr = soup.find('html').attrs
     return attr
+
+
+def get_meta_opf(dir, tags=[], encoding='utf8', features='lxml'):
+    """
+    Wrapper to read meta content of open package format (opf) file. 
+
+    Args:
+        dir(str, BeautifulSoup): directory to a dictionary written in dynamic markup language
+        tags ([str]): list of tags of interest, e.g. tags=['title', 'language']
+        encoding (str): encoding used, default is 'utf8'
+        features (str): parser used, default is 'lxml'
+    Functions : 
+        `dir_handler()`, `get_meta_opf_from_soup()`.
+    Notes:
+        content.opf lists the content of an epub/modi file, instructing KindleGen about the order in which the files are to be compiled.
+    """ 
+    # set up source directory:
+    if not dir:
+        home = Path.home()
+        dir = home / 'GDLC/output/GDLC_processed'       
+    dir = dir_handler(dir, mkdir=False)
+    # read content from content.opf:
+    file = dir / 'mobi8/OEBPS/content.opf'  # this part of tree is fixed
+    if not file.exists():
+        return print('Aborting. The following file was not found:\n\n', file)
+    # list of meta tags of interest:
+    if tags and not isinstance(tags, list):  # allow tags='list'
+        tags = [tags]
+    if not tags:
+        tags = ['title', 'language', 'identifier', 'creator', 'publisher']
+    # get attributes from the opf file:
+    with open(file, encoding=encoding) as infile:
+        soup = BeautifulSoup(infile, features=features)
+        content = get_meta_opf_from_soup(soup, tags=tags)
+    return content
+
+
+def get_meta_opf_from_soup(soup:BeautifulSoup, tags=[]):
+    """
+    Make a dictionary of some relevant information stored in content.opf file.
+
+    Args:
+        soup(BeautifulSoup): dynamic markup language in BeautifulSoup format
+        tags ([str]): list of tags of interest, e.g. tags=['title', 'language']
+    Returns:
+        content ({str:str}): a dictionary of tags and meta content stored in opf file
+    """
+    # extract and store meta tags
+    content = {}
+    if tags:
+        for tag in tags:
+            meta = 'dc:'+tag
+            for item in soup.find_all(meta):
+                content.update({tag: item.contents[0]})
+    return content
 
 
 def get_pi(dml, features='lxml'):
@@ -773,7 +846,6 @@ def main_loop(files, dir=None, tags=None, protected=None, classes=None, verbose=
     # set up output directory. If default directory `tmp` does not exist, create it:
     if not dir:
         dir = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'tmp'))
-        from pathlib import Path
         Path('tmp').mkdir(parents=True, exist_ok=True)
     print('\nYour output files will be saved in ', dir, '\n')
     print('Make sure a directory exists at the location.\n')
@@ -799,7 +871,7 @@ def main_loop(files, dir=None, tags=None, protected=None, classes=None, verbose=
     # set up default lists:
     entry_tag_default = ['blockquote']
     entry_class_default = ['calibre27']
-    protected_default = ['h1', 'h2', 'h3', '\n']
+    protected_default = ['h1', 'h2', 'h3', 'h4', 'h5', '\n']
     # ignore defaults if set by user
     if not tags:
         tags = entry_tag_default
@@ -875,9 +947,7 @@ def main_loop(files, dir=None, tags=None, protected=None, classes=None, verbose=
         except Exception as e:
             errors.append(file)
             print('\n\nCRITICAL ERROR! \n\nPROBLEM WITH:\n\n', file, '\n\nAN ERROR WAS LOGGED\n\n')
-            import logging
             logging.error("Exception occurred: %s", e)
-            import traceback
             trace = traceback.format_exc()
             logging.error(trace)
     print('\n\nALL FILES PROCESSED: CHECK THE LOGS FOR ANY ERRORS.')
@@ -968,7 +1038,8 @@ def make_entry(soup:BeautifulSoup, strip_tags=(), strip_attrs=None, strip_classe
     Notes:
         UNDER REPAIR
     TO DO: 
-        add thorough test file, break up if possible.
+        add thorough test file
+        work out what to put into id
     """
     # Emtpy or malformed definitions return None, in this case return the empty string:
     if not soup:
@@ -992,9 +1063,18 @@ def make_entry(soup:BeautifulSoup, strip_tags=(), strip_attrs=None, strip_classe
     # Extract the dictionary definition:
     s3 = make_definition(s3)
     # Concatenate label, word, definition, and tag group:
-    entry = '<idx:entry scriptable="yes">' + '\n' + s1 + s2 + s3 + '\n' + '</idx:entry>'
+    entry = make_entry_idx() + '\n' + s1 + s2 + s3 + '\n' + '</idx:entry>'
     if verbose:  # print to debug:
         print_output(entry)
+    return entry
+
+
+def make_entry_idx(name='Catalan', scriptable='yes', spell='yes', id=''):
+    """
+    Pass options to the idx entry tag.
+    """
+    attrs = [name, scriptable, spell, id]
+    entry = '<idx:entry name="{0}" scriptable="{1}" spell="{2}" id="{3}">'.format(*attrs)
     return entry
 
 

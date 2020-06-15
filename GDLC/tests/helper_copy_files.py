@@ -6,7 +6,7 @@ Test `copy_files()`: copies files from source to destination.
 
 # Copy a list of files to the default directory:
 >>> copy_files(files=files)
-The following files are being copied:
+Getting ready to copy files to destination directory.
 
 
  /Users/patricktoche/GDLC/source/GDLC_unpacked/mobi8/META-INF/container.xml 
@@ -24,7 +24,7 @@ The following files are being copied:
 
 # Copy a list of files to a specified directory:
 >>> copy_files(files=files, dir='~/tmp/tmp')
-The following files are being copied:
+Getting ready to copy files to destination directory.
 
 
  /Users/patricktoche/GDLC/source/GDLC_unpacked/mobi8/META-INF/container.xml 
@@ -42,7 +42,7 @@ The following files are being copied:
 
 # Attempt to copy non-existent file:
 >>> copy_files(files=['~/tmp/bananas.txt'])
-The following files are being copied:
+Getting ready to copy files to destination directory.
 
 The following file was not found:
 
