@@ -54,8 +54,8 @@ Created 3 May 2020
 
 @author: patricktoche
 """
-import os
 import sys
+import os
 from pathlib import Path, PosixPath
 import io
 import re
@@ -68,6 +68,7 @@ import progressbar  # !!  progressbar2 under the hood
 
 import logging
 import traceback
+
 
 def copy_dirtree(indir, outdir, onerror=None):
     """ 
@@ -430,7 +431,7 @@ def get_doctype(dml, features='lxml'):
     return soup
 
 
-def get_doctype_from_soup(soup):
+def get_doctype_from_soup(soup:BeautifulSoup):
     """
     Extract <!Doctype> declaration from a BeautifulSoup object.
 
@@ -773,7 +774,7 @@ def list_files_ignore(ignore_list, dir):
     return lst
 
 
-def list_invalid_tags(soup, valid=[]):
+def list_invalid_tags(soup:BeautifulSoup, valid=[]):
     """
     Make a list of tags that the kindle does not support.
 
@@ -817,7 +818,52 @@ def list_valid_tags():
     return ['a', 'b', 'big', 'blockquote', 'body', 'br', 'center', 'cite', 'dd', 'del', 'dfn', 'div', 'em', 'font', 'head', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'html', 'i', 'img', 'li', 'ol', 'p', 's', 'small', 'span', 'strike', 'strong', 'sub', 'sup', 'u', 'ul', 'var']
 
 
-# TO DO: UNDER CONSTRUCTION/REPAIR
+def make_dictionary(dml, tags=None, protected=None, classes=None, verbose=False, clean=False, features='lxml', progress=True):
+    """
+    Process several dictionary definitions from a dynamic markup language.
+
+    Args:
+        body (Tag): BeautifulSoup Tag
+        protected ([str]): protected tags are returned untouched
+    Returns:
+        dic ({str}): a dictionary of definitions
+    Modules:
+        progressbar
+    Functions:
+        `version_check()`, `print_child_info()`, `make_entry`, `strip_header()`
+    """ 
+    # definitions will be stored in an order-preserving dictionary:
+    version_check()  # abort if Python < 3.6
+    # dictionary values will be joined at the end:
+    d = {}
+    for child in dml.findChildren(recursive=False):
+        # flush progressbar to console:
+        # bar.update()
+        # flush fake progressbar to console:
+        print('■', end='', flush=True)
+        if verbose:  # print to debug:
+            print_child_info(child)
+        # print protected tags as is: 
+        if child.name in protected:
+            d.update({str(child.name): str(child)})
+        # process tags that contain dictionary definitions (defined above):
+        elif child.name in tags and any(c in child['class'] for c in classes):
+            soup = BeautifulSoup(str(child), features=features)
+            entry = make_entry(soup)
+            # remove <xml> header, in case one was inserted by parser:
+            entry = strip_header(entry)
+            # add empty line for clarity:
+            entry = entry + '\n'
+            d.update({str(child.name): entry})
+        else:
+            # remove all other children: 
+            child.extract(strip=True)
+            if verbose:  # print to debug:
+                print('\nThis child was removed:\n', child)
+                print('\nCheck that this is desired behaviour.\nYou may adjust the lists of `tags`, `classes`, and `protected`.')
+    return d
+
+
 def main_loop(files, dir=None, tags=None, protected=None, classes=None, verbose=False, clean=False, features='lxml', progress=True):
     """
     Loop over all files in a given directory.
@@ -837,26 +883,14 @@ def main_loop(files, dir=None, tags=None, protected=None, classes=None, verbose=
     Modules: 
         os, pathlib (Path), bs4 (BeautifulSoup), GDLC (queries)
     Functions: 
-        `query_yes_no()`, `get_head()`, `make_entry()`, `make_dml()`, `print_child_info()`
-    Notes:
-        UNDER REPAIR
+        `main_loop_query()`, `get_head_from_soup()`, `make_dictionary()`,  `make_dml()`, `print_child_info()`
     TO DO: 
-        FIX progressbar, test arguments, add thorough test file, break up if possible.
+        FIX progressbar, use **kwargs
     """ 
-    # set up output directory. If default directory `tmp` does not exist, create it:
-    if not dir:
-        dir = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'tmp'))
-        Path('tmp').mkdir(parents=True, exist_ok=True)
-    print('\nYour output files will be saved in ', dir, '\n')
-    print('Make sure a directory exists at the location.\n')
-    print('Set `dir` in function `main_loop` to change the default directory.\n')
-    print('WARNING: Destination files will be overwritten.\n')
-
-    # ask user to validate a job that can take a while and overwrite files:
-    from GDLC.queries.query import query_yes_no
-    validate = query_yes_no('You are about to start processing multiple dictionary files.\n\nExisting files will be overwritten!\n\nDo you want to proceed?\n')
-    if validate in ['no']:
-        return print('Loop aborted by user!')
+    # set up output directory and ask user to validate.
+    dir = main_loop_query(dir)
+    if not dir:  # at this point, user declined to proceed
+        return None
     
     # set up a progress bar for long jobs:
     # widgets = [progressbar.Percentage(), progressbar.Bar()]
@@ -867,8 +901,7 @@ def main_loop(files, dir=None, tags=None, protected=None, classes=None, verbose=
     # set up a container to hold a list of files that raise an error:
     errors = []
 
-    # set up tag/class to be processed and tags that are protected:
-    # set up default lists:
+    # set up tags to be processed / tags that are protected:
     entry_tag_default = ['blockquote']
     entry_class_default = ['calibre27']
     protected_default = ['h1', 'h2', 'h3', 'h4', 'h5', '\n']
@@ -879,70 +912,28 @@ def main_loop(files, dir=None, tags=None, protected=None, classes=None, verbose=
         classes = entry_class_default
     if not protected:
         protected = protected_default
-
     # start the main loop:
     for file in files:
-        # set up the full path to the output file based on the name of the input file:
-        basename = os.path.basename(file)
-        outfilename = os.path.join(dir, basename)
+        filepath = Path(file)
+        # set up the full path to the output file:
+        outfilename = dir.joinpath(filepath.name)
         # try to read input files and write to output files:
         try:
             print('\n\nPROCESSING FILE', file, ':\n')
-            # open a source file to read the <head> tag:
-            with open(file, encoding='utf8') as infile:
-                # store the <head> tag for later:
-                head = get_head(infile, features=features)
             # open a source file to read the content and a destination file to save the output:
-            with open(file) as infile, open(outfilename, 'w') as outfile:
-                # store the <body> from the source file:
+            with open(file, encoding='utf8') as infile, open(outfilename, 'w') as outfile:
+                # convert dynamic markup language to BeautifulSoup object:
                 soup = BeautifulSoup(infile, features=features)
-                body = soup.find('body')
-                # process the children: 
-                for child in body.findChildren(recursive=False):
-                    # flush genuine progressbar to console:
-                    # bar.update()
-                    # flush fake progressbar to console:
-                    print('■', end='', flush=True)
-                    if verbose:  # print to debug:
-                        print_child_info(child)
-                    # print selected children as is: 
-                    if child.name in protected:
-                        print(child, file=outfile)
-                    # process tags that contain dictionary definitions (defined above):
-                    elif child.name in tags and any(c in child['class'] for c in classes):
-                        #print('DEBUG: child.name = ', child.name, '\n')
-                        #print('DEBUG: child = ', child, '\n')
-                        # convert tag????? to soup, feed to `make_entry()`, and print to file:
-                        soup = BeautifulSoup(str(child), features=features)
-                        #print('DEBUG: type(soup) = ', type(soup), '\n')
-                        #print('DEBUG: soup = ', soup, '\n')
-                        s = make_entry(soup, verbose=False)
-                        #print('DEBUG: type(post_make_entry) = ', type(s), '\n')
-                        # remove xml header, if one was inserted by parser:
-                        if features == 'xml':
-                            s = strip_header(s)
-                        # add empty line for clarity:
-                        s = s + '\n'
-                        print(s, file=outfile)
-                    else:
-                        # remove all other children: 
-                        child.extract(strip=True)
-                        if verbose:  # print to debug:
-                            print('\nThis child was removed:\n', child)
-                            print('\nCheck that this is desired behaviour.\nYou may adjust the lists of `tags`, `classes`, and `protected`.')
-                # exit the loop after all the children have been processed
-            # insert the <body> of the output file into the <head> of the input file: Note the 'r+' argument
-            with open(outfilename, 'r+') as outfile:
-                # read the <body> of the processed file:
-                body = outfile.read()
-                # combine <body> with the <head> stored earlier:
-                html = make_dml(body=body, head=head, features=features)
-                # go to the top of the file:
-                outfile.seek(0)
+                # store the <head>, <body> tags:
+                head = get_head_from_soup(soup)  # returns a string
+                body = soup.find('body')  # returns a BeautifulSoup Tag
+                # process the body to return formatted dictionary entries:
+                dico = make_dictionary(body, tags=tags, protected=protected, classes=classes, features=features)
+                body = '\n'.join(dico.values())
+                # combine <body> with the <head> to create a formatted page:
+                page = make_dml(body=body, head=head, features=features)
                 # write to the file:
-                outfile.write(html)
-                # make sure content is completely overwritten: 
-                outfile.truncate()
+                print(page, file=outfile)
         # if something goes wrong, log the error:
         except Exception as e:
             errors.append(file)
@@ -956,6 +947,36 @@ def main_loop(files, dir=None, tags=None, protected=None, classes=None, verbose=
     else:
         print('\nThe following files raised an exception:', errors)
     return print('■')
+
+
+def main_loop_query(dir):
+    """
+    Print warning and request user confirmation before proceeding.
+
+    Args:
+        dir (str): path to destination directory.
+    Returns: stop/continue
+    Modules: 
+        pathlib (Path), query (query_yes_no)
+    """
+    if dir:
+        print('\nYour output files will be saved in ', dir, '\n')
+    # ask user to validate a job that can take a while and overwrite files:
+    from GDLC.queries.query import query_yes_no
+    validate = query_yes_no('\nWARNING!\n\nYou are about to start processing multiple dictionary files.\n\nExisting files will be overwritten!\n\nDo you want to proceed?\n')
+    if validate in ['no']:
+        print('\nLoop aborted by user!')
+        return None
+    if not dir:
+        dir = Path(__file__).resolve().parent.parent.joinpath('tmp')
+        print('\nWARNING!\n\nAs no directory was given, files will be saved in the default location:\n\n', dir, '\n')
+        print('Set `dir` in function `main_loop()` to save to another directory.\n')
+        validate = query_yes_no('\nDo you want to proceed?\n')
+        if validate in ['no']:
+            print('\nLoop aborted by user!')
+            return None
+        Path(dir).mkdir(parents=True, exist_ok=True)
+    return dir
 
 
 def make_definition(soup:Tag, clean=False):
@@ -1069,12 +1090,18 @@ def make_entry(soup:BeautifulSoup, strip_tags=(), strip_attrs=None, strip_classe
     return entry
 
 
-def make_entry_idx(name='Catalan', scriptable='yes', spell='yes', id=''):
+def make_entry_idx(name='Catalan', scriptable='yes', spell='yes'):
     """
-    Pass options to the idx entry tag.
+    Pass values for name, scriptable, spell attributes to the idx entry tag.
+    Args:
+        name (str), scriptable (str), spell (str): <idx:entry> attributes
+    Returns:
+        <idx:entry> tag with attributes.
+    Notes:
+        A sequential 'id' attribute will be added separately to <idx:entry>.
     """
-    attrs = [name, scriptable, spell, id]
-    entry = '<idx:entry name="{0}" scriptable="{1}" spell="{2}" id="{3}">'.format(*attrs)
+    attrs = [name, scriptable, spell]
+    entry = '<idx:entry name="{0}" scriptable="{1}" spell="{2}">'.format(*attrs)
     return entry
 
 
@@ -1159,7 +1186,7 @@ def print_child_info(child):
     return print('\n')
 
 
-def print_soup_info(soup, name=None):
+def print_soup_info(soup:BeautifulSoup, name=None):
     """
     Print information about a BeautifulSoup object for degugging purposes.
 
@@ -1355,19 +1382,19 @@ def strip_spaces(item):
     Args:
         item (str, BeautifulSoup, Tag, NavigableString)
     Returns:
-        Wrapper around `strip_spaces_st()` and `strip_spaces_bs()`
+        Wrapper around `strip_spaces_st()` and `strip_spaces_from_soup()`
     Modules: 
         bs4 (BeautifulSoup, Tag, NavigableString)
     """
     if isinstance(item, str):
         return strip_spaces_st(item)
     elif isinstance(item, (BeautifulSoup, Tag, NavigableString)):
-        return strip_spaces_bs(item)
+        return strip_spaces_from_soup(item)
     else:  # here for debugging purposes
         raise ValueError('function strip_spaces() expects a string, a BeautifulSoup object or a Tag')
 
 
-def strip_spaces_bs(soup):
+def strip_spaces_from_soup(soup:BeautifulSoup):
     """
     Strip excess white spaces from a BeautifulSoup object.
 
@@ -1515,7 +1542,7 @@ def split_entry(soup:BeautifulSoup):
     return s1, s2, s3
 
 
-def validate_entry(soup, verbose=False):
+def validate_entry(soup:BeautifulSoup, verbose=False):
     """
     Removes invalid dictionary entries.
 
@@ -1540,3 +1567,12 @@ def validate_entry(soup, verbose=False):
             print('Warning: These entries are missing an essential class:\n', p)
     return soup
 
+
+def version_check(raise_exception=True):
+    """
+    Checks Python version and raises exception if incompatibility detected.
+    """
+    if not sys.version_info >= (3, 6):
+        if raise_exception:
+            raise Exception('Aborting. This implementation of GDLC relies on the built-in ordering of ordinary dictionaries introduced in Python 3.6. In earlier versions of Python, dictionaries did not preserve order of insertion. For earlier versions of Python, an `OrderedDict` should be used instead. Changes to the code are required in `make_dictionary()`. Set `raise_exception=False` to proceed anyway.')
+    return None

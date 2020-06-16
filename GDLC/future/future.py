@@ -55,7 +55,7 @@ def clean_xml(xml, indent=4, method=None):
     if method == 'etree':
         return clean_lxml_etree(xml)
     if method == 'lxml':
-        return clean_bs4_lxml(xml)
+        return clean_from_soup_lxml(xml)
     return print('`clean_xml()` is a wrapper around several methods based on different libraries. No default method selected. Current choices are:  "minidom", "etree", "lxml"\n')
 
 
@@ -90,7 +90,7 @@ def clean_lxml_etree(xml):
 
 
 # IN PROGRESS
-def clean_bs4_lxml(xml, indent=4):
+def clean_from_soup_lxml(xml, indent=4):
     """
     Take an xml file and return indented formatting. 
 
@@ -137,6 +137,31 @@ for root, dirs, files in os.walk(dir):
             dml = clean_xml(os.path.join(root, file), method='lxml')
             with open(out, 'w') as outfile:
                     outfile.write(str(dml))
+
+
+
+
+# IN PROGRESS
+def make_entry_id(soup:BeautifulSoup):
+    """
+    Args:
+    """
+    tags = soup.find_all('idx:entry')
+    for tag in tags:
+        # if <idx:entry> has an id, suppress it:
+        for attr in tag.attrs('id'):
+            del tag.attr
+        for i, j in enumerate(tags):
+            tag.attrs['id'] = i
+            tag.attrs.append(('id', i))
+            TRY ON OF THESE
+                
+
+
+
+
+
+
 
 
 

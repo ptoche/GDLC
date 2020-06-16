@@ -24,7 +24,7 @@ Turn a mobi dictionary entry into a lookup dictionary entry.
 >>> soup = BeautifulSoup(dml, features='lxml')
 
 >>> print(make_entry(soup))
-<idx:entry name="Catalan" scriptable="yes" spell="yes" id="">
+<idx:entry name="Catalan" scriptable="yes" spell="yes">
 <idx:orth value="ABC">
       <idx:infl>
         <idx:iform name="" value="ABC"/>
