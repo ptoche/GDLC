@@ -141,6 +141,10 @@ for root, dirs, files in os.walk(dir):
 
 
 
+
+
+
+
 # IN PROGRESS
 def make_entry_id(soup:BeautifulSoup):
     """
@@ -327,8 +331,33 @@ def clean_anchors(xml):
     Make a list of replacement anchors.
     Replace.
     return xml
-
+    href="Text/part0004.xhtml#aid-3Q281"
     """
+    soup.find_all('a')
+
+def convert_name_to_id(soup: bs4.BeautifulSoup) -> None:
+    for anchor in soup.html.find_all('a'):
+        if anchor.has_attr('name'):
+            anchor['id'] = anchor['name']
+            del anchor['name']
+
+def is_empty(tag: Any) -> bool:
+    for child in tag.children:
+        if isinstance(child, bs4.element.Tag):
+            return False
+        if isinstance(child, bs4.element.NavigableString):
+            if child.strip() != '':
+                return False
+            continue
+        return False
+    return True
+
+def remove_empty_paragraphs(soup: bs4.BeautifulSoup) -> None:
+    for element in soup.find_all('p'):
+        if is_empty(element):
+            element.decompose()
+
+
 
 def make_id(text):
     """
@@ -387,37 +416,6 @@ def get_root_from_soup(soup:BeautifulSoup):
 
 
 
-###### 6 June 2020
-
-# IN PROGRESS: run a clean_xml action on the directory, clean_anchors
-
-# TO DO: MAKE FUNCTION TO SELECT PAGES TO PROCESS
-skip = [0:16]+[276:278]
-
-def make_range(arg*):
-    arg = map(int, arg.split(":"))
-    r = list(range(0,10000))
-    print ary[arg[0]:arg[1]]
-
-r = list(range(0,16))
-
-# Skip files 000-015 and 276-277
-f = filelist[16:277]
-f = filelist[16:277]
-
-# Copy files 000-015 and 276-277 from source
-f = filelist[0:16] + filelist[276:278]
-import shutil
-for file in f:
-    shutil.copy(file, outdir)
-
-
-
-
-
-
-if 'warn' not in sys.modules:
-    from warnings import warn
 
 
 # IN PROGRESS:
@@ -428,26 +426,3 @@ def make_kindle():
     /Users/patricktoche/kindlegen/KindleGen_Mac_i386_v2_9/kindlegen 
 
     """ 
-
-
-
-
-
-# IN PROGRESS
->>> soup = BeautifulSoup(dml, features='lxml')
-
->>> soup.find('html').attrs
-
->>> from bs4 import NavigableString as ns
->>> namespaces = {}
->>> for attr in soup.find('html').attrs:
->>>     if attr.startswith("xmlns") or ":" in attr:
-            namespaces[attr] = soup.find('html')[attr].split(" ")
-
->>> [tag.attrs for tag in soup.find_all('html') if not ns]
-
-
-soup.find_all(['h{}'.format(i) for i in range(1,7)])
-
-# clean_href
-href="Text/part0004.xhtml#aid-3Q281"

@@ -222,28 +222,6 @@ def default_copy(dir=None):
     return files
 
 
-def default_head():
-    """Returns the default xml <head> tag"""
-    return '''<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"></head>'''
-
-
-def default_root():
-    """Returns the default Amazon Kindle dictionary <root> tag"""
-    root = '''\
-<html xmlns:math="http://exslt.org/math" \
-xmlns:svg="http://www.w3.org/2000/svg" \
-xmlns:tl="https://kindlegen.s3.amazonaws.com/AmazonKindlePublishingGuidelines.pdf" \
-xmlns:saxon="http://saxon.sf.net/" \
-xmlns:xs="http://www.w3.org/2001/XMLSchema" \
-xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" \
-xmlns:cx="https://kindlegen.s3.amazonaws.com/AmazonKindlePublishingGuidelines.pdf" \
-xmlns:dc="http://purl.org/dc/elements/1.1/" \
-xmlns:mbp="https://kindlegen.s3.amazonaws.com/AmazonKindlePublishingGuidelines.pdf" \
-xmlns:mmc="https://kindlegen.s3.amazonaws.com/AmazonKindlePublishingGuidelines.pdf" \
-xmlns:idx="https://kindlegen.s3.amazonaws.com/AmazonKindlePublishingGuidelines.pdf">'''
-    return root
-
-
 def destroy_tags(soup:BeautifulSoup, *args:str):
     """
     Suppress tag and tag content for tags that the kindle does not support.
@@ -883,7 +861,7 @@ def main_loop(files, dir=None, tags=None, protected=None, classes=None, verbose=
     Modules: 
         os, pathlib (Path), bs4 (BeautifulSoup), GDLC (queries)
     Functions: 
-        `main_loop_query()`, `get_head_from_soup()`, `make_dictionary()`,  `make_dml()`, `print_child_info()`
+        `main_loop_query()`, `get_head_from_soup()`, `make_dictionary()`, `print_child_info()`
     TO DO: 
         FIX progressbar, use **kwargs
     """ 
@@ -924,14 +902,13 @@ def main_loop(files, dir=None, tags=None, protected=None, classes=None, verbose=
             with open(file, encoding='utf8') as infile, open(outfilename, 'w') as outfile:
                 # convert dynamic markup language to BeautifulSoup object:
                 soup = BeautifulSoup(infile, features=features)
-                # store the <head>, <body> tags:
-                head = get_head_from_soup(soup)  # returns a string
-                body = soup.find('body')  # returns a BeautifulSoup Tag
                 # process the body to return formatted dictionary entries:
+                body = soup.find('body')  # returns a BeautifulSoup Tag
                 dico = make_dictionary(body, tags=tags, protected=protected, classes=classes, features=features)
                 body = '\n'.join(dico.values())
-                # combine <body> with the <head> to create a formatted page:
-                page = make_dml(body=body, head=head, features=features)
+                # create a dml page with <html> and <head> tags:
+                body = BeautifulSoup(body, features=features)
+                page = make_dml_from_soup(body=body, features=features)
                 # write to the file:
                 print(page, file=outfile)
         # if something goes wrong, log the error:
@@ -1021,27 +998,34 @@ def make_definition(soup:Tag, clean=False):
     return defn
 
 
-def make_dml(body, head, features='lxml'):
+def make_dml(soup: BeautifulSoup, features='lxml'):
+    """Wrapper for `make_dml_from_soup()`"""
+    return make_dml_from_soup(soup, features=features)
+
+
+def make_dml_from_soup(soup: BeautifulSoup, features='lxml'):
     """
-    Inserts a body within the head of dml file.
+    Builds a dynamic markup language page from string components.
 
     Args:
-        body (str): body of a dml page
-        head (str): head of a dml page
+        soup (BeautifulSoup): body of dml page
     Returns:
-        dml (str): dml page with head and body
+        dml (str): dml page with body, head, and root tags
     """
-    n = body.count('<body>')
-    # if there are multiple <body> tags, return an error!
-    if n > 1:
-        raise ValueError('More than one body tags found inside body!')
-    # if the body element is not tagged by <body>, add it:
-    if n == 0:
-        body = '<body>' + body + '</body>'
-    body = BeautifulSoup(body, features=features).find('body')
-    dml = BeautifulSoup(head, features=features)
-    dml.head.insert_after(body)
-    dml = str(dml)
+    # convert <head> into BeautifulSoup Tag:
+    head = BeautifulSoup(template_head(), features=features).find('head')
+    # insert the <body> after the <head>
+    soup.find('body').insert_before(head)
+    # populate the <html> attributes:
+    soup = insert_attrs_html(soup.find('html'))
+    # convert element tag to soup object to insert <xlm> declaration:
+    soup = BeautifulSoup(str(soup), features=features)
+    # convert <xml> into BeautifulSoup object:
+    xml = BeautifulSoup(template_xml(), features=features)
+    # insert the <xml> tag at the top of the page:
+    soup.insert(0, xml)
+    # return page as a string:
+    dml = str(soup)
     return dml
 
 
@@ -1281,6 +1265,38 @@ def replace_strings(text:str, *args:str, replace=''):
     return text
 
 
+def split_entry(soup:BeautifulSoup):
+    """
+    Splits dictionary entry into three parts. 
+
+    Args:
+        soup (BeautifulSoup): A complete dictionary definition
+    Returns:
+        s1, s2, s3: A 3-tuple of BeautifulSoup objects.
+    Modules: 
+        bs4 (BeautifulSoup)
+    Functions: 
+        patched `extract()` from module GDLC
+    """
+    # slice soup into chunks:
+    s1, s2, s3 = '', '', '' 
+    # slice s1: word label for lookup
+    f = soup.find_all('p', attrs={'class':'rf'})
+    if f:
+        for p in f:
+            s1 = soup.p.extract(strip=True)
+    # slice s2: word long and short forms 
+    f = soup.find_all('p', attrs={'class':'df'})
+    if f:
+        for p in f:
+            s2 = soup.p.extract(strip=True)
+    # slice s3: word definition
+    # p tags with classes rf and df were removed above
+    # save the part enclosed in blockquotes
+    s3 = soup.find('blockquote')
+    return s1, s2, s3
+
+
 def strip_arrows(text:str):
     """
     Remove arrows from text.
@@ -1313,24 +1329,6 @@ def strip_attrs(soup:BeautifulSoup, *args:str):
         for tag in soup.find_all():
             if tag.has_attr(arg):
                 del tag.attrs[arg]
-    return soup
-
-
-def strip_squares(soup:BeautifulSoup):
-    """
-    Remove special character '■' and associated tag from a dictionary definition. 
-
-    Args:
-        soup (BeautifulSoup): a dictionary definition processed as a BeautifulSoup object
-    Returns:
-        soup (BeautifulSoup): argument with all instances of <sup>■</sup> removed
-    Modules: 
-        bs4 (BeautifulSoup)
-    """    
-    for item in soup.find_all('sup'):
-        if '■' in item.get_text():
-            item.extract(strip=True)
-            break
     return soup
 
 
@@ -1373,6 +1371,62 @@ def strip_classes(soup:BeautifulSoup, *args:str):
             if tag.has_attr('class'):
                 del tag.attrs['class']
     return(soup)
+
+
+def strip_comments(soup:BeautifulSoup):
+    """
+    Strip comment from BeautifulSoup object.
+
+    Args:
+        soup (BeautifulSoup): any soup
+    Returns:
+        soup (BeautifulSoup): with comments stripped out
+    Modules: 
+        bs4 (BeautifulSoup, Comment)
+    """
+    f = soup.find_all(text=lambda text:isinstance(text, Comment))
+    for fi in f:
+        fi.extract(strip=True)
+    #[fi.extract(strip=True) for fi in f]  # alternative, equivalent way
+    return soup
+
+
+def strip_empty_tags(soup:BeautifulSoup, strip_lines=False):
+    """
+    Remove empty tags from a BeautifulSoup object.
+    If `strip_lines=True`, empty lines are also removed. 
+    Argument `strip_lines` is passed down to `extract(strip=strip_lines)`
+    
+    Args: 
+        soup (BeautifulSoup): html content with empty tags
+    Returns: 
+        soup (BeautifulSoup): original soup with empty tags removed
+    Modules: 
+        bs4 (BeautifulSoup)
+    Functions: 
+        `patched extract()` from module GDLC
+    """
+    for item in soup.find_all():
+        if len(item.get_text(strip=True)) == 0:
+            item.extract(strip=strip_lines)
+    return soup
+
+
+def strip_header(dml:str, header='<?xml version="1.0" encoding="utf-8"?>'):
+    """
+    Remove <xml> header using the re module to make case-insensitive replacement.
+
+    Args: 
+        xml (str): an xml page
+        header (str): a header, defaults to standard <xml> header.
+    Returns:
+        xml (str): an xml page with xml header removed
+    Modules: 
+        re
+    """
+    esc = re.escape(header) 
+    dml = re.sub(esc, '', dml, flags=re.IGNORECASE | re.MULTILINE).strip()
+    return dml
 
 
 def strip_spaces(item):
@@ -1433,60 +1487,22 @@ def strip_spaces_st(html):
     return html
 
 
-def strip_comments(soup:BeautifulSoup):
+def strip_squares(soup:BeautifulSoup):
     """
-    Strip comment from BeautifulSoup object.
+    Remove special character '■' and associated tag from a dictionary definition. 
 
     Args:
-        soup (BeautifulSoup): any soup
+        soup (BeautifulSoup): a dictionary definition processed as a BeautifulSoup object
     Returns:
-        soup (BeautifulSoup): with comments stripped out
-    Modules: 
-        bs4 (BeautifulSoup, Comment)
-    """
-    f = soup.find_all(text=lambda text:isinstance(text, Comment))
-    for fi in f:
-        fi.extract(strip=True)
-    #[fi.extract(strip=True) for fi in f]  # alternative, equivalent way
-    return soup
-
-
-def strip_empty_tags(soup:BeautifulSoup, strip_lines=False):
-    """
-    Remove empty tags from a BeautifulSoup object.
-    If `strip_lines=True`, empty lines are also removed. 
-    Argument `strip_lines` is passed down to `extract(strip=strip_lines)`
-    
-    Args: 
-        soup (BeautifulSoup): html content with empty tags
-    Returns: 
-        soup (BeautifulSoup): original soup with empty tags removed
+        soup (BeautifulSoup): argument with all instances of <sup>■</sup> removed
     Modules: 
         bs4 (BeautifulSoup)
-    Functions: 
-        `patched extract()` from module GDLC
-    """
-    for item in soup.find_all():
-        if len(item.get_text(strip=True)) == 0:
-            item.extract(strip=strip_lines)
+    """    
+    for item in soup.find_all('sup'):
+        if '■' in item.get_text():
+            item.extract(strip=True)
+            break
     return soup
-
-
-def strip_header(dml:str, header='<?xml version="1.0" encoding="utf-8"?>'):
-    """
-    Remove <xml> header using the re module to make case-insensitive replacement.
-
-    Args: 
-        xml (str): an xml page
-        header (str): a header, defaults to standard <xml> header.
-    Returns:
-        xml (str): an xml page with xml header removed
-    Modules: 
-        re
-    """
-    esc = re.escape(header) 
-    dml = re.sub(esc, '', dml, flags=re.IGNORECASE | re.MULTILINE).strip()
-    return dml
 
 
 def strip_tags(soup:BeautifulSoup, *args:str):
@@ -1510,36 +1526,53 @@ def strip_tags(soup:BeautifulSoup, *args:str):
     return soup
 
 
-def split_entry(soup:BeautifulSoup):
-    """
-    Splits dictionary entry into three parts. 
+def template_head() -> str:
+    """Returns the default GDLC <head> tag and attributes."""
+    return '''\
+<title>Gran Diccionari de la llengua catalana</title> 
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/> 
+<link href="../Styles/style0001.css" rel="stylesheet" type="text/css"/> 
+<link href="../Styles/style0002.css" rel="stylesheet" type="text/css"/> 
+<link href="../Styles/style0003.css" rel="stylesheet" type="text/css"/>'''
 
-    Args:
-        soup (BeautifulSoup): A complete dictionary definition
-    Returns:
-        s1, s2, s3: A 3-tuple of BeautifulSoup objects.
-    Modules: 
-        bs4 (BeautifulSoup)
-    Functions: 
-        patched `extract()` from module GDLC
-    """
-    # slice soup into chunks:
-    s1, s2, s3 = '', '', '' 
-    # slice s1: word label for lookup
-    f = soup.find_all('p', attrs={'class':'rf'})
-    if f:
-        for p in f:
-            s1 = soup.p.extract(strip=True)
-    # slice s2: word long and short forms 
-    f = soup.find_all('p', attrs={'class':'df'})
-    if f:
-        for p in f:
-            s2 = soup.p.extract(strip=True)
-    # slice s3: word definition
-    # p tags with classes rf and df were removed above
-    # save the part enclosed in blockquotes
-    s3 = soup.find('blockquote')
-    return s1, s2, s3
+
+def template_html() -> str:
+    """Returns the default Amazon Kindle dictionary <root> tag"""
+    return '''\
+<html xmlns:math="http://exslt.org/math" \
+xmlns:svg="http://www.w3.org/2000/svg" \
+xmlns:tl="https://kindlegen.s3.amazonaws.com/AmazonKindlePublishingGuidelines.pdf" \
+xmlns:saxon="http://saxon.sf.net/" \
+xmlns:xs="http://www.w3.org/2001/XMLSchema" \
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" \
+xmlns:cx="https://kindlegen.s3.amazonaws.com/AmazonKindlePublishingGuidelines.pdf" \
+xmlns:dc="http://purl.org/dc/elements/1.1/" \
+xmlns:mbp="https://kindlegen.s3.amazonaws.com/AmazonKindlePublishingGuidelines.pdf" \
+xmlns:mmc="https://kindlegen.s3.amazonaws.com/AmazonKindlePublishingGuidelines.pdf" \
+xmlns:idx="https://kindlegen.s3.amazonaws.com/AmazonKindlePublishingGuidelines.pdf"> \
+</html>'''
+
+
+def insert_attrs_html(tag: Tag) -> Tag:
+    """Inserts the default Amazon Kindle dictionary attributes to existing <html> tag."""
+    tag.attrs.clear()  # clear existing attributes, if any
+    tag['xmlns:math'] = 'http://exslt.org/math'
+    tag['xmlns:svg'] = 'http://www.w3.org/2000/svg'
+    tag['xmlns:tl'] = 'https://kindlegen.s3.amazonaws.com/AmazonKindlePublishingGuidelines.pdf'
+    tag['xmlns:saxon'] = 'http://saxon.sf.net/'
+    tag['xmlns:xs'] = 'http://www.w3.org/2001/XMLSchema'
+    tag['xmlns:xsi'] = 'http://www.w3.org/2001/XMLSchema-instance'
+    tag['xmlns:cx'] = 'https://kindlegen.s3.amazonaws.com/AmazonKindlePublishingGuidelines.pdf'
+    tag['xmlns:dc'] = 'http://purl.org/dc/elements/1.1/'
+    tag['xmlns:mbp'] = 'https://kindlegen.s3.amazonaws.com/AmazonKindlePublishingGuidelines.pdf'
+    tag['xmlns:mmc'] = 'https://kindlegen.s3.amazonaws.com/AmazonKindlePublishingGuidelines.pdf'
+    tag['xmlns:idx'] = 'https://kindlegen.s3.amazonaws.com/AmazonKindlePublishingGuidelines.pdf'
+    return tag
+
+
+def template_xml() -> str:
+    """Returns an <xml> tag with attributes"""
+    return '<?xml version="1.0" encoding="UTF-8"?>'
 
 
 def validate_entry(soup:BeautifulSoup, verbose=False):

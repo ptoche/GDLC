@@ -27,14 +27,6 @@ def test_examples(verbose = False):
     r = doctest.testfile('test_default_copy.py', optionflags=flags)
     a[0] += r[0] ; a[1] += r[1]
 
-    if verbose: print('...testing examples in file test_default_head.py')
-    r = doctest.testfile('test_default_head.py', optionflags=flags)
-    a[0] += r[0] ; a[1] += r[1]
-
-    if verbose: print('...testing examples in file test_default_root.py')
-    r = doctest.testfile('test_default_root.py', optionflags=flags)
-    a[0] += r[0] ; a[1] += r[1]
-
     if verbose: print('...testing examples in file test_destroy_tags.py')
     r = doctest.testfile('test_destroy_tags.py', optionflags=flags)
     a[0] += r[0] ; a[1] += r[1]
@@ -179,6 +171,18 @@ def test_examples(verbose = False):
 
     if verbose: print('...testing examples in file test_strip_tags.py')
     r = doctest.testfile('test_strip_tags.py')
+    a[0] += r[0] ; a[1] += r[1]
+
+    if verbose: print('...testing examples in file test_template_head.py')
+    r = doctest.testfile('test_template_head.py', optionflags=flags)
+    a[0] += r[0] ; a[1] += r[1]
+
+    if verbose: print('...testing examples in file test_template_html.py')
+    r = doctest.testfile('test_template_html.py', optionflags=flags)
+    a[0] += r[0] ; a[1] += r[1]
+
+    if verbose: print('...testing examples in file test_template_xml.py')
+    r = doctest.testfile('test_template_xml.py', optionflags=flags)
     a[0] += r[0] ; a[1] += r[1]
 
     return tuple(a)
