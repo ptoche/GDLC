@@ -6,7 +6,7 @@ Notes: Couldn't make this doctest work, so useful only as a visual test.
 >>> from GDLC.GDLC import *
 
 # Copy a list of files to the default directory:
->>> default_copy(dir='~/GDLC/source/GDLC_unpacked') # doctest:+ELLIPSIS
+>>> template_copy(dir='~/GDLC/source/GDLC_unpacked') # doctest:+ELLIPSIS
 [PosixPath('.../mobi7/Images/author_footer.jpeg'),
  PosixPath('.../mobi7/Images/author_image.jpeg'),
  PosixPath('.../mobi7/Images/cover_image.jpeg'),
@@ -18,7 +18,6 @@ Notes: Couldn't make this doctest work, so useful only as a visual test.
  PosixPath('.../mobi8/OEBPS/toc.ncx'),
  PosixPath('.../mobi8/OEBPS/Styles/style0001.css'),
  PosixPath('.../mobi8/OEBPS/Styles/style0002.css'),
- PosixPath('.../mobi8/OEBPS/Styles/style0003.css'),
  PosixPath('.../mobi8/OEBPS/Images/author_footer.jpeg'),
  PosixPath('.../mobi8/OEBPS/Images/author_image.jpeg'),
  PosixPath('.../mobi8/OEBPS/Images/cover_image.jpeg'),

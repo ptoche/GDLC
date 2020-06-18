@@ -1,5 +1,5 @@
 """ 
-Default <root> tag for Amazon Kindle dictionary dynamic markup language files:
+Default <root> tag for Amazon Kindle dictionary document markup language files:
 
 >>> from GDLC.GDLC import *
 >>> print(template_html())

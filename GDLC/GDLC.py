@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Gran Diccionari de la llengua catalana
+"""GDLC - Gran Diccionari de la llengua catalana
 
 Functions to edit the xhtml source code for the GDLC (Kindle edition).
 
-Written for the 'Gran diccionari de la llengua catalana' published by Institut d'Estudis Catalans in 2013, purchased from Amazon for 6 euros and downloaded in the `mobi` format. 
+Written for the 'Gran Diccionari de la llengua catalana' published by Institut d'Estudis Catalans in 2013, purchased from Amazon for 6 euros and downloaded in the `mobi` format. 
 
-After conversion to the azw format via the Calibre plugin KindleUnpack, the dictionary entries appear as well-formed blocks of document markup language code. 
+After conversion to the azw format via the Calibre plugin KindleUnpack, the dictionary entries appear as well-formed blocks of document markup language code. written in the document markup language (GDLC source files are written in xhtml) 
 
-The code loops through the blocks and formats them one at a time. The code may hopefully be adapted to other dictionaries, but almost certainly will not work without alterations. 
+The code loops through the blocks and formats them one at a time. The code may hopefully be adapted to other dictionaries, but almost certainly will not work without significant alterations. 
 
-Example:
-    A dictionary entry may be converted to a lookup dictionary definition with
+Usage:
+    A dictionary entry may be converted to a lookup dictionary definition with:
 
-        $ GDLC.make_entry(string)
+        $ GDLC.make_entry(dml)
 
     make_entry() calls the following functions:
         split_entry()
@@ -22,13 +22,17 @@ Example:
             make_definition()
     and concatenates label, headword, and definition into a dictionary entry.
 
+    A dictionary page
+
     For examples of usage see inside `run.py`.
     The core code of module GDLC is in `GDLC.py`.
-    A test suite for the module is in the `tests` directory. See `tests/tests.py` for details. 
-    Log files are saved in the `logs` directory.  See `logs/logs.py` for details. 
-    Elements involving interaction with the user are in the `queries` directory. See `queries/query.py` for details. 
-    Future developments and work in progress are in the `future` directory. See `future/future.py` for details.
-    There is no proper documentation for this project. Limited information may be found in the `docs` directory and inside docstrings. As the project evolves, some information may have become obsolete, beware. 
+    Companion modules include:
+        - test module. See `tests/tests.py` for details. 
+        - logs module. Log files are saved in the `logs/logfiles` directory. See `logs/logs.py` for details. 
+        - debug module. See `debug/debug.py` for details. 
+        - query module. Sets up elements involving interaction with the user. See `query/query.py` for details. 
+        - future module. Future developments and work in progress. See `future/future.py` for details.
+    There is no proper documentation for this project. Limited information may be found in the `docs` directory and inside function docstrings. As the project evolves, some information may have become obsolete, beware. 
 
 Args:
     verbose, clean, and features are common arguments of several functions. Their description is not repeated inside each function. 
@@ -38,17 +42,30 @@ Args:
 
 Returns:
     main_loop() reads the GDLC dictionary source files, edits them, and saves them into a format and directory structure that Amazon's KindleGen understands.
-    make_entry() reads an entry from the GDLC dictionary text files and returns an entry conforming with the following template:
+    make_entry() reads an entry from the GDLC dictionary text files and returns an entry conforming with the following template (with options to unclass tags):
 
-    <idx:entry scriptable="yes">
-...   <idx:orth value="ABC">
-...     <idx:infl>
-...       <idx:iform name="" value="ABC"/>
-...     </idx:infl>
-...   </idx:orth><div><span><b>ABC</b></span></div><span><strong">ABC -xy</strong></code><sup class="calibre23">1</sup>.</span><div><blockquote class="calibre27" id="d34421">
-    <blockquote><span>Definition here.</span></blockquote>
-    </blockquote></div>
-    </idx:entry> 
+    '''\
+    ... <idx:entry scriptable="yes">
+    ...   <idx:orth value="ABC">
+    ...     <idx:infl>
+    ...       <idx:iform name="" value="ABC"/>
+    ...     </idx:infl>
+    ...   </idx:orth>
+    ...     <div>
+    ...       <span>
+    ...         <b>ABC</b>
+    ...       </span>
+    ...     </div>
+    ...     <span>
+    ...       <strong">ABC -xy</strong><sup class="calibre23">1</sup>.
+    ...     </span>
+    ...     <div>
+    ...       <blockquote align="left><span>Definition here.</span></blockquote>
+    ...       </blockquote align="left><span>More details here.</span></blockquote>
+    ...       </blockquote align="left><span>Even more details here.</span></blockquote>
+    ...     </div>
+    ... </idx:entry>\
+    ...''' 
 
 Created 3 May 2020
 
@@ -62,6 +79,7 @@ import re
 from shutil import copy2  # shutil.copy2 copies metadata+permissions
 
 from bs4 import BeautifulSoup, Tag, NavigableString, Comment, PageElement
+from typing import List, Set, Tuple, Dict, Iterable, Union, Any
 
 from pprint import pprint
 import progressbar  # !!  progressbar2 under the hood
@@ -146,7 +164,7 @@ def copy_files(files=[], dir=None, source=None, mkdir=False):
     Modules: 
         shutil (copy2)
     Functions: 
-        `default_copy()`, `dir_handler()`
+        `template_copy()`, `dir_handler()`
     """
     # set or create a destination directory
     dir = dir_handler(dir, mkdir=mkdir)
@@ -155,7 +173,7 @@ def copy_files(files=[], dir=None, source=None, mkdir=False):
         if not source:
             home = Path.home()
             source = home / 'GDLC/source/GDLC_unpacked'
-        files = default_copy(dir=source)
+        files = template_copy(dir=source)
     # copy files to destination:
     print('\nGetting ready to copy files to destination directory.\n')
     copies = []
@@ -176,13 +194,13 @@ def copy_files(files=[], dir=None, source=None, mkdir=False):
     return copies
 
 
-def default_copy(dir=None):
+def template_copy(dir=None):
     """
     Lists all files to be copied from source directory to destination.
     The file list is hard coded. Files may be added/removed as I understand file structure better.
 
     Usage:
-        `default_copy(dir='~/GDLC/source/GDLC_unpacked')`
+        `template_copy(dir='~/GDLC/source/GDLC_unpacked')`
     Modules:
             pathlib (Path)
     Notes:
@@ -207,7 +225,6 @@ def default_copy(dir=None):
     filez.append('mobi8/OEBPS/toc.ncx')
     filez.append('mobi8/OEBPS/Styles/style0001.css')
     filez.append('mobi8/OEBPS/Styles/style0002.css')
-    filez.append('mobi8/OEBPS/Styles/style0003.css')
     filez.append('mobi8/OEBPS/Images/author_footer.jpeg')
     filez.append('mobi8/OEBPS/Images/author_image.jpeg')
     filez.append('mobi8/OEBPS/Images/cover_image.jpeg')
@@ -543,7 +560,7 @@ def get_meta_opf(dir, tags=[], encoding='utf8', features='lxml'):
     Wrapper to read meta content of open package format (opf) file. 
 
     Args:
-        dir(str, BeautifulSoup): directory to a dictionary written in dynamic markup language
+        dir(str, BeautifulSoup): directory to a dictionary written in document markup language
         tags ([str]): list of tags of interest, e.g. tags=['title', 'language']
         encoding (str): encoding used, default is 'utf8'
         features (str): parser used, default is 'lxml'
@@ -578,7 +595,7 @@ def get_meta_opf_from_soup(soup:BeautifulSoup, tags=[]):
     Make a dictionary of some relevant information stored in content.opf file.
 
     Args:
-        soup(BeautifulSoup): dynamic markup language in BeautifulSoup format
+        soup(BeautifulSoup): document markup language in BeautifulSoup format
         tags ([str]): list of tags of interest, e.g. tags=['title', 'language']
     Returns:
         content ({str:str}): a dictionary of tags and meta content stored in opf file
@@ -637,7 +654,7 @@ def get_sorted_id(dml, features='lxml'):
 
 def get_sorted_id_from_soup(soup:BeautifulSoup):
     """
-    Sorts unique and duplicated IDs in a dynamic markup language document.
+    Sorts unique and duplicated IDs in a document markup language document.
 
     Args:
         soup (BeautifulSoup): markup language as BeautifulSoup object
@@ -796,34 +813,47 @@ def list_valid_tags():
     return ['a', 'b', 'big', 'blockquote', 'body', 'br', 'center', 'cite', 'dd', 'del', 'dfn', 'div', 'em', 'font', 'head', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'html', 'i', 'img', 'li', 'ol', 'p', 's', 'small', 'span', 'strike', 'strong', 'sub', 'sup', 'u', 'ul', 'var']
 
 
-def make_dictionary(dml, tags=None, protected=None, classes=None, verbose=False, clean=False, features='lxml', progress=True):
+def make_dictionary(dml, tags=[], protected=[], classes=[], clean=False, features='lxml', progress=True, verbose=False):
     """
-    Process several dictionary definitions from a dynamic markup language.
+    Process several dictionary definitions from a document markup language.
 
     Args:
-        body (Tag): BeautifulSoup Tag
+        dml (Tag): BeautifulSoup Tag
         protected ([str]): protected tags are returned untouched
     Returns:
         dic ({str}): a dictionary of definitions
     Modules:
         progressbar
     Functions:
-        `version_check()`, `print_child_info()`, `make_entry`, `strip_header()`
+        `version_check()`, `debug.print_child_info()`, `make_entry`, `strip_header()`
     """ 
     # definitions will be stored in an order-preserving dictionary:
     version_check()  # abort if Python < 3.6
     # dictionary values will be joined at the end:
-    d = {}
-    for child in dml.findChildren(recursive=False):
-        # flush progressbar to console:
-        # bar.update()
+    dic = {}
+    children = dml.findChildren(recursive=False)
+    n = len(children)+1
+    if verbose:  # print to debug:
+        from GDLC.debug.debug import print_dictionary_info
+        print_dictionary_info(n)
+    # initialize a counter:
+    i = 0
+    if progress:
+        widgets = [progressbar.Percentage(), progressbar.Bar(marker='■')]
+        bar = progressbar.ProgressBar(widgets=widgets, max_value=n).start()
+    for child in children:
+        # update a counter and progressbar:
+        i += 1
+        if progress:
+            bar.update(i+1)
         # flush fake progressbar to console:
-        print('■', end='', flush=True)
+        # print('■', end='', flush=True)
         if verbose:  # print to debug:
+            from GDLC.debug.debug import print_child_info
             print_child_info(child)
         # print protected tags as is: 
         if child.name in protected:
-            d.update({str(child.name): str(child)})
+            dic.update({str(i): str(child)})
         # process tags that contain dictionary definitions (defined above):
         elif child.name in tags and any(c in child['class'] for c in classes):
             soup = BeautifulSoup(str(child), features=features)
@@ -832,17 +862,19 @@ def make_dictionary(dml, tags=None, protected=None, classes=None, verbose=False,
             entry = strip_header(entry)
             # add empty line for clarity:
             entry = entry + '\n'
-            d.update({str(child.name): entry})
+            dic.update({str(i): entry})
         else:
             # remove all other children: 
             child.extract(strip=True)
             if verbose:  # print to debug:
-                print('\nThis child was removed:\n', child)
-                print('\nCheck that this is desired behaviour.\nYou may adjust the lists of `tags`, `classes`, and `protected`.')
-    return d
+                from GDLC.debug.debug import print_child_extract
+                print_child_extract(child)
+    if progress:
+        bar.finish()
+    return dic
 
 
-def main_loop(files, dir=None, tags=None, protected=None, classes=None, verbose=False, clean=False, features='lxml', progress=True):
+def main_loop(files, dir=None, tags=[], protected=[], classes=[], clean=False, features='lxml', progress=True, query=True, verbose=False):
     """
     Loop over all files in a given directory.
 
@@ -859,26 +891,18 @@ def main_loop(files, dir=None, tags=None, protected=None, classes=None, verbose=
     Returns:
         None
     Modules: 
-        os, pathlib (Path), bs4 (BeautifulSoup), GDLC (queries)
+        os, pathlib (Path), bs4 (BeautifulSoup), GDLC (query)
     Functions: 
-        `main_loop_query()`, `get_head_from_soup()`, `make_dictionary()`, `print_child_info()`
+        `main_loop_query()`, `get_head_from_soup()`, `make_dictionary()`, `debug.print_log_error()`
     TO DO: 
-        FIX progressbar, use **kwargs
+        use **kwargs
     """ 
     # set up output directory and ask user to validate.
-    dir = main_loop_query(dir)
+    dir = main_loop_query(dir, query)
     if not dir:  # at this point, user declined to proceed
         return None
-    
-    # set up a progress bar for long jobs:
-    # widgets = [progressbar.Percentage(), progressbar.Bar()]
-    # bar = progressbar.ProgressBar(widgets=widgets, max_value=10)
-    # initialize the progress bar:
-    # bar.start()
-    
     # set up a container to hold a list of files that raise an error:
     errors = []
-
     # set up tags to be processed / tags that are protected:
     entry_tag_default = ['blockquote']
     entry_class_default = ['calibre27']
@@ -900,24 +924,24 @@ def main_loop(files, dir=None, tags=None, protected=None, classes=None, verbose=
             print('\n\nPROCESSING FILE', file, ':\n')
             # open a source file to read the content and a destination file to save the output:
             with open(file, encoding='utf8') as infile, open(outfilename, 'w') as outfile:
-                # convert dynamic markup language to BeautifulSoup object:
+                # convert document markup language to BeautifulSoup object:
                 soup = BeautifulSoup(infile, features=features)
                 # process the body to return formatted dictionary entries:
                 body = soup.find('body')  # returns a BeautifulSoup Tag
-                dico = make_dictionary(body, tags=tags, protected=protected, classes=classes, features=features)
+                dico = make_dictionary(body, tags=tags, protected=protected, classes=classes, features=features, progress=progress, verbose=verbose)
                 body = '\n'.join(dico.values())
                 # create a dml page with <html> and <head> tags:
                 body = BeautifulSoup(body, features=features)
-                page = make_dml_from_soup(body=body, features=features)
+                page = make_dml_from_soup(body, features=features)
                 # write to the file:
                 print(page, file=outfile)
         # if something goes wrong, log the error:
-        except Exception as e:
-            errors.append(file)
-            print('\n\nCRITICAL ERROR! \n\nPROBLEM WITH:\n\n', file, '\n\nAN ERROR WAS LOGGED\n\n')
-            logging.error("Exception occurred: %s", e)
-            trace = traceback.format_exc()
-            logging.error(trace)
+        except Exception as error:
+            if verbose:
+                from GDLC.debug.debug import print_log_error
+                print_log_error(item=file, error=error, record=errors)
+            else:
+                print(str(error))
     print('\n\nALL FILES PROCESSED: CHECK THE LOGS FOR ANY ERRORS.')
     if not errors:
         print('\nNO EXCEPTIONS WERE RECORDED!')
@@ -926,32 +950,37 @@ def main_loop(files, dir=None, tags=None, protected=None, classes=None, verbose=
     return print('■')
 
 
-def main_loop_query(dir):
+def main_loop_query(dir, query=True):
     """
     Print warning and request user confirmation before proceeding.
 
     Args:
         dir (str): path to destination directory.
+        query (bool): always answer 'yes' if False
     Returns: stop/continue
     Modules: 
         pathlib (Path), query (query_yes_no)
     """
     if dir:
         print('\nYour output files will be saved in ', dir, '\n')
-    # ask user to validate a job that can take a while and overwrite files:
-    from GDLC.queries.query import query_yes_no
-    validate = query_yes_no('\nWARNING!\n\nYou are about to start processing multiple dictionary files.\n\nExisting files will be overwritten!\n\nDo you want to proceed?\n')
-    if validate in ['no']:
-        print('\nLoop aborted by user!')
-        return None
+    # ask user to validate long job and overwrite files:
+    if query:
+        # do not add to namespace if no query:
+        from GDLC.query.query import query_yes_no
+        validate = query_yes_no('\nWARNING!\n\nYou are about to start processing multiple dictionary files.\n\nFor a typical dictionary, this could take a few minutes.\n\nExisting files will be overwritten!\n\nDo you want to proceed?\n')
+        if validate in ['no']:
+            print('\nLoop aborted by user!')
+            return None
     if not dir:
         dir = Path(__file__).resolve().parent.parent.joinpath('tmp')
         print('\nWARNING!\n\nAs no directory was given, files will be saved in the default location:\n\n', dir, '\n')
         print('Set `dir` in function `main_loop()` to save to another directory.\n')
-        validate = query_yes_no('\nDo you want to proceed?\n')
-        if validate in ['no']:
-            print('\nLoop aborted by user!')
-            return None
+        # ask user to validate the directory:
+        if query:
+            validate = query_yes_no('\nDo you want to proceed?\n')
+            if validate in ['no']:
+                print('\nLoop aborted by user!')
+                return None
         Path(dir).mkdir(parents=True, exist_ok=True)
     return dir
 
@@ -1005,7 +1034,7 @@ def make_dml(soup: BeautifulSoup, features='lxml'):
 
 def make_dml_from_soup(soup: BeautifulSoup, features='lxml'):
     """
-    Builds a dynamic markup language page from string components.
+    Builds a document markup language page from string components.
 
     Args:
         soup (BeautifulSoup): body of dml page
@@ -1017,7 +1046,7 @@ def make_dml_from_soup(soup: BeautifulSoup, features='lxml'):
     # insert the <body> after the <head>
     soup.find('body').insert_before(head)
     # populate the <html> attributes:
-    soup = insert_attrs_html(soup.find('html'))
+    soup = template_html_insert(soup.find('html'))
     # convert element tag to soup object to insert <xlm> declaration:
     soup = BeautifulSoup(str(soup), features=features)
     # convert <xml> into BeautifulSoup object:
@@ -1060,6 +1089,7 @@ def make_entry(soup:BeautifulSoup, strip_tags=(), strip_attrs=None, strip_classe
     # Split dictionary entry into parts:
     s1, s2, s3 = split_entry(soup)
     if verbose:  # print to debug:
+        from GDLC.debug.debug import print_type
         print_type(s1, s2, s3)
     # Extract label value for dictionary entry:
     s1 = make_label(s1)
@@ -1070,6 +1100,7 @@ def make_entry(soup:BeautifulSoup, strip_tags=(), strip_attrs=None, strip_classe
     # Concatenate label, word, definition, and tag group:
     entry = make_entry_idx() + '\n' + s1 + s2 + s3 + '\n' + '</idx:entry>'
     if verbose:  # print to debug:
+        from GDLC.debug.debug import print_output
         print_output(entry)
     return entry
 
@@ -1139,113 +1170,6 @@ def make_label(soup:Tag):
     s = s.replace('label', label, 2)
     label = str(s).strip()
     return label
-
-
-def print_children(soup:BeautifulSoup):
-    """
-    Print information about all children and descendents.
-
-    Args: 
-        soup (BeautifulSoup): dictionary entry
-    """
-    print('Number of children and descendants of main soup object:\n')
-    print('No. children:   ', len(list(soup.children)))
-    print('\nThe children are printed below:')
-    print('\n', list(soup.children))
-    print('\nNo. descendants:', len(list(soup.descendants)))
-    print('\nThe descendants are printed below:')
-    print('\n', list(soup.descendants))
-    return print('\n')
-
-
-def print_child_info(child):
-    """
-    Print information about each dictionary entry as a child of main soup.
-
-    Args: 
-        child (BeautifulSoup): child of dictionary entry
-    """
-    print('child.name =', child.name)
-    print('child["class"]', child['class'])
-    return print('\n')
-
-
-def print_soup_info(soup:BeautifulSoup, name=None):
-    """
-    Print information about a BeautifulSoup object for degugging purposes.
-
-    Modules: bs4 (BeautifulSoup)
-    """ 
-    info = {'name': None, 'type': None, 'class': None, 'content': None, 'children': None}
-    soup_name, soup_type, soup_class, soup_content, soup_children =  ([], ) * 5
-    try:
-        soup_name = soup.name
-    except Exception:
-        soup_name.append('NA')
-    try:
-        soup_type = type(soup)
-    except Exception:
-        soup_type.append('NA')
-    try:
-        soup_class = [i.text.strip() for i in soup.select('class')]
-    except Exception:
-        soup_class.append('NA')
-    try:
-        for si in soup.content:
-            soup_content.append(si)
-    except Exception:
-        soup_content.append('NA')
-    try:
-        if soup.findChildren(recursive=False):
-            soup_children = soup.findChildren(recursive=False)
-    except Exception:
-        soup_children.append('NA')
-    # add information to dictionary:
-    info.update({'name': soup_name, 'type': soup_type, 'content': soup_content, 'children': soup_children})
-    # print to console:
-    sep_line = '============================================================================='
-    print('\n\n INFORMATION REQUESTED:\n', sep_line, '\n') 
-    pprint.pprint(info, indent=0, width=80)
-    print('\n', sep_line, '\n\n')
-    # return the dictionary
-    return info
-
-
-def print_summary(docstring):
-    """
-    Prints a function's docstring.
-
-    Args: 
-        docstring (str): documentation
-    """
-    print('\n\nThe `verbose` flag was set to `True`\n')
-    print('Summary of main function:\n')
-    print(docstring)
-    return print('\n')
-
-
-def print_output(output:str):
-    """
-    Print output to screen surrounded by double lines (more visible, useful for debugging).
-
-    Args: 
-        output (str): any string
-    """
-    return print('\n\nOUTPUT PRINTOUT:\n================\n', output, '\n================\n\n')
-
-
-def print_type(*args):
-    """
-    Print the type of the argument. 
-
-    Args: 
-        args (any type): tuple of any size
-    Returns: 
-        None
-    """
-    for idx, arg in enumerate(args, start=1):
-        print('type of arg %s is %s' % (idx, type(arg)))
-    return print('\n')
 
 
 def replace_strings(text:str, *args:str, replace=''):
@@ -1532,8 +1456,7 @@ def template_head() -> str:
 <title>Gran Diccionari de la llengua catalana</title> 
 <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/> 
 <link href="../Styles/style0001.css" rel="stylesheet" type="text/css"/> 
-<link href="../Styles/style0002.css" rel="stylesheet" type="text/css"/> 
-<link href="../Styles/style0003.css" rel="stylesheet" type="text/css"/>'''
+<link href="../Styles/style0002.css" rel="stylesheet" type="text/css"/>'''
 
 
 def template_html() -> str:
@@ -1553,7 +1476,7 @@ xmlns:idx="https://kindlegen.s3.amazonaws.com/AmazonKindlePublishingGuidelines.p
 </html>'''
 
 
-def insert_attrs_html(tag: Tag) -> Tag:
+def template_html_insert(tag: Tag) -> Tag:
     """Inserts the default Amazon Kindle dictionary attributes to existing <html> tag."""
     tag.attrs.clear()  # clear existing attributes, if any
     tag['xmlns:math'] = 'http://exslt.org/math'
@@ -1587,17 +1510,18 @@ def validate_entry(soup:BeautifulSoup, verbose=False):
     Modules: 
         bs4 (BeautifulSoup)
     Functions: 
-        `print_children()`
+        `debug.print_children()`
     """
     if verbose:  # print to debug:
+        from GDLC.debug.debug import print_children
         print_children(soup)
     # delete entries missing class 'rf' and/or 'df'
     p = soup.find_all('p', attrs={'class':'rf', 'class':'df'})
     if p:
         soup.p.extract(strip=True)
         if verbose:  # print to debug:
-            print('Warning: ', len(p), ' entries with missing classes "rf" or "df" were removed.')
-            print('Warning: These entries are missing an essential class:\n', p)
+            from GDLC.debug.debug import print_warn_missing
+            print_warn_missing(p)
     return soup
 
 

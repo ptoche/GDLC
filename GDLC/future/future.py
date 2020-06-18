@@ -139,6 +139,15 @@ for root, dirs, files in os.walk(dir):
                     outfile.write(str(dml))
 
 
+# IN PROGRESS: version without patched extract()
+def strip_empty_tags(soup:BeautifulSoup):
+    for item in soup.find_all():
+        if not item.get_text(strip=True):
+            item.decompose
+            soup.smooth()
+    return soup
+
+
 
 
 
@@ -178,10 +187,10 @@ def make_entry_id(soup:BeautifulSoup):
 # Use a multi-level dictionary?
 def get_meta_dml(dir, tags=[], encoding='utf8', features='lxml'):
     """
-    Wrapper to read meta content of dynamic markup language (dml) file. 
+    Wrapper to read meta content of document markup language (dml) file. 
 
     Args:
-        dir(str, BeautifulSoup): directory to a dictionary written in dynamic markup language
+        dir(str, BeautifulSoup): directory to a dictionary written in document markup language
         tags ([str]): list of tags of interest, e.g. tags=['title', 'language']
         encoding (str): encoding used, default is 'utf8'
         features (str): parser used, default is 'lxml'
@@ -221,7 +230,7 @@ def get_meta_dml_from_soup(soup:BeautifulSoup, tags=[]):
     Make a dictionary of some relevant information stored in dml files.
 
     Args:
-        soup (BeautifulSoup): dynamic markup language in BeautifulSoup format
+        soup (BeautifulSoup): document markup language in BeautifulSoup format
         tags ([str]): list of tags of interest, e.g. tags=['title', 'language']
     Returns:
         content ({str:str}): a dictionary of tags and meta content stored in opf file
@@ -245,7 +254,7 @@ def check_content(dir, encoding='utf8', features='lxml'):
     Loops through all text files looking for inconsistencies with content.opf.
 
     Args:
-        dir(str, BeautifulSoup): directory to a dictionary written in dynamic markup language
+        dir(str, BeautifulSoup): directory to a dictionary written in document markup language
         encoding (str): encoding used, default is 'utf8'
         features (str): parser used, default is 'lxml'
     
@@ -296,7 +305,7 @@ def check_toc(dir, encoding='utf8'):
     Loops through all text files looking for inconsistencies with toc.ncx.
 
     Args:
-        dir(str, BeautifulSoup): directory to a dictionary written in dynamic markup language.
+        dir(str, BeautifulSoup): directory to a dictionary written in document markup language.
         encoding (str): encoding used, default is 'utf8'.
     
     Returns:
@@ -341,24 +350,33 @@ def convert_name_to_id(soup: bs4.BeautifulSoup) -> None:
             anchor['id'] = anchor['name']
             del anchor['name']
 
-def is_empty(tag: Any) -> bool:
-    for child in tag.children:
-        if isinstance(child, bs4.element.Tag):
-            return False
-        if isinstance(child, bs4.element.NavigableString):
-            if child.strip() != '':
-                return False
-            continue
-        return False
-    return True
-
-def remove_empty_paragraphs(soup: bs4.BeautifulSoup) -> None:
-    for element in soup.find_all('p'):
-        if is_empty(element):
-            element.decompose()
 
 
+def insert_pagebreak() -> str:
+    """Insert an <mbp:pagebreak> tag."""
+    print('<mbp:pagebreak/>')
 
+def insert_frameset() -> str:
+    """Insert an <mbp:frameset> tag."""
+    print('<mbp:frameset>')
+    <body>
+        <mbp:pagebreak/>
+        <mbp:frameset>    
+        </mbp:frameset>
+    </body>
+
+
+# <a id="filepos63413"/>
+
+
+# IN PROGRESS:
+def make_sections(soup: BeautifulSoup):
+    """
+    Inserts <mbp:section> tags at selected positions.
+    """
+    section_tag = soup.new_tag('<mbp:section>')
+
+# IN PROGRESS:
 def make_id(text):
     """
     Loop through the entire dictionary and create unique IDs for each dictionary entry.
@@ -366,63 +384,10 @@ def make_id(text):
     # TO DO
     return text
 
-
-
-
-def get_root(dml, features='lxml'):
-    """
-    Wrapper for document markup language.
-
-    Functions : 
-        `markup_handler()`, `get_root_from_soup()`.
-    """
-    soup = markup_handler(dml, features=features)
-    soup = get_root_from_soup(soup)
-    return soup
-
-
-
-def get_root_from_soup(soup:BeautifulSoup):
-    """
-    Read an xhtml/xml/html file and extracts the root tag. 
-
-    Args: 
-        soup (BeautifulSoup): markup language as BeautifulSoup object
-    Returns: 
-        root (str): <root> of the page
-    Modules: 
-        bs4 (BeautifulSoup)
-    Note:
-        See also: `get_pi()`
-    """
-    # list of root tags:
-    root_tags = ['html', 'xhtml', 'xml'] 
-    # get the root:
-    tags = soup.find_all(root_tags)
-    if not tags:
-        return ''
-    for t in tags:
-        ''.join(str(t.contents))
-    # TO DO : FIX THIS!
-    # 'xml' not found
-    # 'html' is the whole document
-    # soup_find('html').attrs yields a list instead of properly formed tag ...
-    return root
-
-
-
-
-
-
-
-
-
-
 # IN PROGRESS:
 def make_kindle():
     """ 
     Invoke kindlegen to build ebook from files.
 
     /Users/patricktoche/kindlegen/KindleGen_Mac_i386_v2_9/kindlegen 
-
     """ 

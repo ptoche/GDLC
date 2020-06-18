@@ -23,10 +23,6 @@ def test_examples(verbose = False):
     a = [0,0]
     r = [0,0]
 
-    if verbose: print('...testing examples in file test_default_copy.py')
-    r = doctest.testfile('test_default_copy.py', optionflags=flags)
-    a[0] += r[0] ; a[1] += r[1]
-
     if verbose: print('...testing examples in file test_destroy_tags.py')
     r = doctest.testfile('test_destroy_tags.py', optionflags=flags)
     a[0] += r[0] ; a[1] += r[1]
@@ -171,6 +167,10 @@ def test_examples(verbose = False):
 
     if verbose: print('...testing examples in file test_strip_tags.py')
     r = doctest.testfile('test_strip_tags.py')
+    a[0] += r[0] ; a[1] += r[1]
+    
+    if verbose: print('...testing examples in file test_template_copy.py')
+    r = doctest.testfile('test_template_copy.py', optionflags=flags)
     a[0] += r[0] ; a[1] += r[1]
 
     if verbose: print('...testing examples in file test_template_head.py')

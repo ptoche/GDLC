@@ -1,5 +1,9 @@
-"""
-Configure logging
+"""GDC logging module
+
+Configure settings for logging errors.
+
+Modules:
+    os, datetime (datetime), logging (logging)
 """
 
 # To navigate the directory structure:

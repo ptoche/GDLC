@@ -7,9 +7,9 @@ Remove empty tags.
 ...   <title>TITLE</title>
 ... </head>
 ...   <body>LOOSE TEXT
-...     <a></a>
+...     <div></div>
 ...     <p></p>
-...     <div>BODY</div>
+...     <div>MORE TEXT</div>
 ...     <b></b>
 ...     <i></i> # COMMENT
 ...   </body>
@@ -22,7 +22,7 @@ Remove empty tags.
 <title>TITLE</title>
 </head>
 <body>LOOSE TEXT
-    <div>BODY</div> # COMMENT
+    <div>MORE TEXT</div> # COMMENT
   </body>
 </html>
 
