@@ -2,7 +2,8 @@
 Examples of pieces of html/xml/xhtml markup that ought to be successfully processed by module functions. 
 
 # 1. Typical dictionary definition 
->>> dml = '''<blockquote class="calibre27">
+>>> dml = '''\
+... <blockquote class="calibre27">
 ... <p class="rf">-&gt;ABC<sup class="calibre32">1</sup></p>
 ... <p class="df"><code class="calibre22"><sup class="calibre23">■</sup><strong class="calibre13">ABC -xy</strong></code><sup class="calibre23">1</sup></p>
 ... <p class="ps">Definition here.</p>

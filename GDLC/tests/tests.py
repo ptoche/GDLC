@@ -34,7 +34,11 @@ def test_examples(verbose = False):
     if verbose: print('...testing examples in file test_get_body.py')
     r = doctest.testfile('test_get_body.py')
     a[0] += r[0] ; a[1] += r[1]
-    
+
+    if verbose: print('...testing examples in file test_get_content.py')
+    r = doctest.testfile('test_get_content.py')
+    a[0] += r[0] ; a[1] += r[1]
+
     if verbose: print('...testing examples in file test_get_function_name.py')
     r = doctest.testfile('test_get_function_name.py')
     a[0] += r[0] ; a[1] += r[1]
@@ -51,17 +55,24 @@ def test_examples(verbose = False):
     r = doctest.testfile('test_get_html_attrs.py')
     a[0] += r[0] ; a[1] += r[1]
 
-#    TO DO: FIX IT
-#    if verbose: print('...testing examples in file test_get_root.py')
-#    r = doctest.testfile('test_get_root.py')
-#    a[0] += r[0] ; a[1] += r[1]
-
     if verbose: print('...testing examples in file test_get_meta_opf.py')
     r = doctest.testfile('test_get_meta_opf.py')
     a[0] += r[0] ; a[1] += r[1]
 
+    if verbose: print('...testing examples in file test_get_pi.py')
+    r = doctest.testfile('test_get_pi.py')
+    a[0] += r[0] ; a[1] += r[1]
+
     if verbose: print('...testing examples in file test_get_sorted_id.py')
     r = doctest.testfile('test_get_sorted_id.py')
+    a[0] += r[0] ; a[1] += r[1]
+
+    if verbose: print('...testing examples in file test_insert_frameset.py')
+    r = doctest.testfile('test_insert_frameset.py')
+    a[0] += r[0] ; a[1] += r[1]
+
+    if verbose: print('...testing examples in file test_insert_pagebreak.py')
+    r = doctest.testfile('test_insert_pagebreak.py')
     a[0] += r[0] ; a[1] += r[1]
 
     if verbose: print('...testing examples in file test_list_files_all.py')
@@ -127,6 +138,10 @@ def test_examples(verbose = False):
 
     if verbose: print('...testing examples in file test_split_entry.py')
     r = doctest.testfile('test_split_entry.py')
+    a[0] += r[0] ; a[1] += r[1]
+
+    if verbose: print('...testing examples in file test_strip_anchor.py')
+    r = doctest.testfile('test_strip_anchor.py')
     a[0] += r[0] ; a[1] += r[1]
 
     if verbose: print('...testing examples in file test_strip_arrows.py')

@@ -2,12 +2,12 @@
 Splits dictionary entry into three parts:
 
 >>> from GDLC.GDLC import *
->>> dml = '''
+>>> dml = '''\
 ... <blockquote class="calibre27">
-... <p class="rf">HEADWORD: SHORT FORM</p>
-... <p class="df">HEADWORD: LONG FORM</p>
-... <p class="ps">PRIMARY DEFINITION</p>
-... <p class="p">SECONDARY DEFINITION</p>
+...   <p class="rf">HEADWORD: SHORT FORM</p>
+...   <p class="df">HEADWORD: LONG FORM</p>
+...   <p class="ps">PRIMARY DEFINITION</p>
+...   <p class="p">SECONDARY DEFINITION</p>
 ... </blockquote>
 ... '''
 >>> soup = BeautifulSoup(dml, features='lxml')

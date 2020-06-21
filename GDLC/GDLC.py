@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 """GDLC - Gran Diccionari de la llengua catalana
 
-Functions to edit the xhtml source code for the GDLC (Kindle edition).
+Functions to edit the xhtml source code for the GDLC (Kindle edition). 
+
+Gran Diccionari de la Llengua Catalana. Editor: Enciclopedia Catalana, SAU. ISBN: 978-8441227903. ASIN: B00DZWFUG4.
 
 Written for the 'Gran Diccionari de la llengua catalana' published by Institut d'Estudis Catalans in 2013, purchased from Amazon for 6 euros and downloaded in the `mobi` format. 
 
@@ -45,10 +47,11 @@ Returns:
     make_entry() reads an entry from the GDLC dictionary text files and returns an entry conforming with the following template (with options to unclass tags):
 
     '''\
-    ... <idx:entry scriptable="yes">
+    ... <idx:entry name="Catalan" scriptable="yes" spell="yes">
     ...   <idx:orth value="ABC">
     ...     <idx:infl>
     ...       <idx:iform name="" value="ABC"/>
+    ...       <idx:iform name="" value="ABC-"/>
     ...     </idx:infl>
     ...   </idx:orth>
     ...     <div>
@@ -57,12 +60,12 @@ Returns:
     ...       </span>
     ...     </div>
     ...     <span>
-    ...       <strong">ABC -xy</strong><sup class="calibre23">1</sup>.
+    ...       <strong">ABC -xy</strong><sup>1</sup>.
     ...     </span>
     ...     <div>
-    ...       <blockquote align="left><span>Definition here.</span></blockquote>
+    ...       <blockquote align="left" id="id0001"><span>Definition here.</span></blockquote>
     ...       </blockquote align="left><span>More details here.</span></blockquote>
-    ...       </blockquote align="left><span>Even more details here.</span></blockquote>
+    ...       <blockquote align="left"><span>More details and an <a class="calibre17" href="part1234.xhtml#id1234">anchor</a>.</span></blockquote>
     ...     </div>
     ... </idx:entry>\
     ...''' 
@@ -78,7 +81,7 @@ import io
 import re
 from shutil import copy2  # shutil.copy2 copies metadata+permissions
 
-from bs4 import BeautifulSoup, Tag, NavigableString, Comment, PageElement
+from bs4 import BeautifulSoup, Tag, NavigableString, Comment, PageElement, ProcessingInstruction
 from typing import List, Set, Tuple, Dict, Iterable, Union, Any
 
 from pprint import pprint
@@ -88,7 +91,7 @@ import logging
 import traceback
 
 
-def copy_dirtree(indir, outdir, onerror=None):
+def copy_dirtree(indir, outdir, onerror=None) -> List[str]:
     """ 
     Copy the directory structure found in directory `indir` to directory `outdir`.
 
@@ -118,7 +121,7 @@ def copy_dirtree(indir, outdir, onerror=None):
     return [indir, outdir]
 
 
-def dir_handler(dir=None, mkdir=False):
+def dir_handler(dir=None, mkdir=False) -> Union[os.PathLike, str, bytes]:
     """
     Checks existence of a given directory and creates it upon request.
 
@@ -151,7 +154,7 @@ def dir_handler(dir=None, mkdir=False):
     return dir
 
 
-def copy_files(files=[], dir=None, source=None, mkdir=False):
+def copy_files(files=[], dir=None, source=None, mkdir=False) -> List[str]:
     """ 
     Copy files in given list to selected directory. 
     Destination directory will be created if it does not exist.
@@ -194,7 +197,7 @@ def copy_files(files=[], dir=None, source=None, mkdir=False):
     return copies
 
 
-def template_copy(dir=None):
+def template_copy(dir=None) -> List[str]:
     """
     Lists all files to be copied from source directory to destination.
     The file list is hard coded. Files may be added/removed as I understand file structure better.
@@ -239,7 +242,7 @@ def template_copy(dir=None):
     return files
 
 
-def destroy_tags(soup:BeautifulSoup, *args:str):
+def destroy_tags(soup:BeautifulSoup, *args:str) -> BeautifulSoup:
     """
     Suppress tag and tag content for tags that the kindle does not support.
     By default, removes <script> and <style>.
@@ -330,7 +333,7 @@ def extract_patched(self, _self_index=None, strip=False):
 PageElement.extract = extract_patched
 
 
-def markup_handler(input, invalid_types=[], features='lxml'):
+def markup_handler(input, invalid_types=[], features='lxml') -> BeautifulSoup:
     """
     Directs input to BeautifulSoup parser based on input type. 
 
@@ -412,6 +415,27 @@ def get_body_from_soup(soup:BeautifulSoup):
     body = ''.join(['%s' % x for x in body])
     body = re.sub(r'\n+', '\n', body).strip()  # .strip() removes leading/trailing blankspaces/newlines
     return body
+
+
+def get_content(soup:BeautifulSoup, tag: str=None): # -> dictionary
+    """
+    Make a dictionary of some relevant information stored in selected tags.
+
+    Args:
+        soup (BeautifulSoup): document markup language in BeautifulSoup format
+        tag (str): tag of interest, e.g. tag='title'
+    Returns:
+        content ({str:str}): a dictionary of tags and meta content stored in opf file
+    """
+    # extract and store meta tags
+    content = {}
+    if not tag:
+        print('Aborting. Argument tag must be given as a string, e.g. `tag="title"`.')
+        return None
+    tags = soup.find_all(tag)
+    for item in tags:
+        content.update({str(item.name): item.contents})
+    return content
 
 
 def get_doctype(dml, features='lxml'):
@@ -617,7 +641,9 @@ def get_pi(dml, features='lxml'):
     Functions : 
         `markup_handler()`, `get_pi_from_soup()`.
     """
-    soup = markup_handler(dml, features=features)
+    soup = markup_handler(dml, invalid_types=[Tag, NavigableString], features=features)
+    if not soup:
+        return None
     soup = get_pi_from_soup(soup)
     return soup
 
@@ -632,10 +658,10 @@ def get_pi_from_soup(soup:BeautifulSoup):
         pi (str): <processing instructions> of the page
     Modules: 
         bs4 (BeautifulSoup), bs4 (ProcessingInstruction)
-    Notes:
-        See `get_root()`
     """
-    items = [item for item in soup if isinstance(item, bs4.element.ProcessingInstruction)]
+    if 'PageElement' not in sys.modules:
+        from bs4 import ProcessingInstruction
+    items = [item for item in soup if isinstance(item, ProcessingInstruction)]
     pi = items[0] if items else None
     return pi
 
@@ -672,6 +698,21 @@ def get_sorted_id_from_soup(soup:BeautifulSoup):
             dupe.append(id)
     sorted = {'unique': unique, 'duplicate': dupe}
     return sorted
+
+
+def insert_frameset(soup: BeautifulSoup) -> None:
+    """Insert an <mbp:frameset> tag."""
+    new_tag = soup.new_tag('mbp:frameset')
+    b = soup.find('body')
+    b.wrap(new_tag)
+    return None
+
+
+def insert_pagebreak(soup: BeautifulSoup, tag: Tag) -> None:
+    """Insert an <mbp:pagebreak> tag."""
+    soup = BeautifulSoup(str(soup), features = 'xml')
+    tag.insert(0, soup.new_tag('mbp:pagebreak'))
+    return None
 
 
 def get_unique_id(dml):
@@ -926,6 +967,8 @@ def main_loop(files, dir=None, tags=[], protected=[], classes=[], clean=False, f
             with open(file, encoding='utf8') as infile, open(outfilename, 'w') as outfile:
                 # convert document markup language to BeautifulSoup object:
                 soup = BeautifulSoup(infile, features=features)
+                # insert a <mbp:frameset> tag:
+                insert_frameset(soup)
                 # process the body to return formatted dictionary entries:
                 body = soup.find('body')  # returns a BeautifulSoup Tag
                 dico = make_dictionary(body, tags=tags, protected=protected, classes=classes, features=features, progress=progress, verbose=verbose)
@@ -1221,6 +1264,55 @@ def split_entry(soup:BeautifulSoup):
     return s1, s2, s3
 
 
+def strip_anchor(soup: BeautifulSoup) -> BeautifulSoup:
+    """
+    Loop through every anchor and strip it, without editing content. 
+
+    Args:
+        soup (BeautifulSoup): A BeautifulSoup object
+    Returns:
+        Wrapper around `strip_anchor_href()` and `strip_anchor_id()`
+    Modules: 
+        bs4 (BeautifulSoup), re (compile)
+    """
+    # For each anchor found in "id", search the anchor in "href":
+    for tag_id in soup.find_all(attrs={'id':True}):
+        id = str(tag_id['id'])
+        for tag_a in soup.find_all('a', href=re.compile(id)):
+            tag_a.unwrap()
+        del tag_id['id']
+    return soup
+
+
+def strip_anchor_from_href(soup: BeautifulSoup) -> BeautifulSoup:
+    """
+    Loop through every href anchor and strip it, without editing content.
+
+    Strip <a> tags such as
+        <a class="calibre17" href="part0017.xhtml#d00401">absolutisme</a>
+    Args:
+        soup (BeautifulSoup): A BeautifulSoup object
+    """
+    tags = soup.find_all('a')
+    for tag in tags:
+        tag.unwrap()
+    return soup
+
+
+def strip_anchor_from_id(soup: BeautifulSoup) -> BeautifulSoup:
+    """
+    Loop through every id anchor and strip it, without editing content.
+
+    Strip <id> attributes such as
+        <h2 class="centrat2" id="aid-F8901">A</h2>
+    Args:
+        soup (BeautifulSoup): A BeautifulSoup object
+    """
+    for tag in soup.find_all(attrs={'id':True}):
+        del tag['id']
+    return soup
+
+
 def strip_arrows(text:str):
     """
     Remove arrows from text.
@@ -1360,12 +1452,12 @@ def strip_spaces(item):
     Args:
         item (str, BeautifulSoup, Tag, NavigableString)
     Returns:
-        Wrapper around `strip_spaces_st()` and `strip_spaces_from_soup()`
+        Wrapper around `strip_spaces_from_string()` and `strip_spaces_from_soup()`
     Modules: 
         bs4 (BeautifulSoup, Tag, NavigableString)
     """
     if isinstance(item, str):
-        return strip_spaces_st(item)
+        return strip_spaces_from_string(item)
     elif isinstance(item, (BeautifulSoup, Tag, NavigableString)):
         return strip_spaces_from_soup(item)
     else:  # here for debugging purposes
@@ -1394,7 +1486,7 @@ def strip_spaces_from_soup(soup:BeautifulSoup):
     return soup
 
 
-def strip_spaces_st(html):
+def strip_spaces_from_string(html):
     """
     Strip extra spaces from a string.
 

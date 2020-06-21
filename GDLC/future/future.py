@@ -29,163 +29,10 @@ import os
 import re
 import bs4
 
-
 # IN PROGRESS
-def clean_xml(xml, indent=4, method=None):
-    """
-    Take an xml file and return indented formatting. 
-    
-    Args:
-        xml (str): a correctly formatted, but not indented xml page
-        indent (num): size of the indent, defaults to 4
-        method (str): name of the module used, one of
-            'minidom': Uses minidom module from xml.dom library.
-            'etree': Uses etree module from lxml library.
-            'lxml': Uses the BeautifulSoup module from bs4 library and the lxml parser. 
-
-    Return:
-        xml (str): an indented xml page
-    
-    Modules: bs4 (BeautifulSoup)
-    
-    Modules: A wrapper around several modules, written to help selecting method and for debugging xml code.
-    """
-    if method == 'minidom':
-        return clean_xml_dom_minidom(xml, indent=indent)
-    if method == 'etree':
-        return clean_lxml_etree(xml)
-    if method == 'lxml':
-        return clean_from_soup_lxml(xml)
-    return print('`clean_xml()` is a wrapper around several methods based on different libraries. No default method selected. Current choices are:  "minidom", "etree", "lxml"\n')
-
-
-# IN PROGRESS
-def clean_xml_dom_minidom(xml, indent=4):
-    """
-    Take an xml file and return indented formatting. 
-
-    Modules: xml.dom (minidom)
-    """
-    from xml.dom import minidom
-    from xml.etree.cElementTree import Element, tostring
-    root = Element('root')
-    xml = minidom.parseString(tostring(root)).toprettyxml(indent=' '*indent)
-    return xml
-
-
-# IN PROGRESS
-def clean_lxml_etree(xml):
-    """
-    Take an xml file and return indented formatting. 
-
-    Modules: lxml (etree)
-    """
-    from lxml import etree
-    parser = etree.XMLParser(resolve_entities=False, strip_cdata=False)
-    etree.set_default_parser(parser)
-    xml = etree.fromstring(xml)
-    xml = parse(xml, parser)
-    xml = parser.write(xml, pretty_print=True, xml_declaration=True, encoding='utf-8')
-    return xml
-
-
-# IN PROGRESS
-def clean_from_soup_lxml(xml, indent=4):
-    """
-    Take an xml file and return indented formatting. 
-
-    Modules: bs4 (BeautifulSoup), lxml
-    """
-    # from bs4 import BeautifulSoup  # already imported
-    for line in xml: 
-        print(BeautifulSoup(line, features='lxml').prettify())
-    return xml
-
-# IN PROGRESS
-def validate_xml(xml:str):
-    """
-    XHTML is a markup language that is designed by combining XML and HTML. 
-    XHTML can be seen as a cleaner version of HTML, which is also stricter than HTML. 
-    XHTML is a W3C recommendation. 
-
-    Modules: lxml, StringIO
-    """
-    from lxml import etree
-    from StringIO import StringIO
-    etree.parse(StringIO(xml), etree.HTMLParser(recover=False))
-
-
-
-# Clean selected xml files:
-files = outfilelist[149:150]
-for file in files:
-    base, ext = os.path.splitext(file)
-    out = base+'_cleaned'+ext
-    with open(file, 'r') as infile, open(out, 'w') as outfile:
-        dml = clean_xml(infile, method='lxml')
-        print(dml, file=outfile)
-        #outfile.write(dml)
-        #print(dml, file=outfile)
-
-# Clean xml files inside Text directory:
-dir = '/Users/PatrickToche/GDLC/output/GDLC_processed/mobi8/OEBPS/Text'
-for root, dirs, files in os.walk(dir):
-    for file in files:
-        if file.endswith('.xhtml'):
-            base, ext = os.path.splitext(file)
-            out = base+'_cleaned'+ext
-            dml = clean_xml(os.path.join(root, file), method='lxml')
-            with open(out, 'w') as outfile:
-                    outfile.write(str(dml))
-
-
-# IN PROGRESS: version without patched extract()
-def strip_empty_tags(soup:BeautifulSoup):
-    for item in soup.find_all():
-        if not item.get_text(strip=True):
-            item.decompose
-            soup.smooth()
-    return soup
-
-
-
-
-
-
-
-
-# IN PROGRESS
-def make_entry_id(soup:BeautifulSoup):
-    """
-    Args:
-    """
-    tags = soup.find_all('idx:entry')
-    for tag in tags:
-        # if <idx:entry> has an id, suppress it:
-        for attr in tag.attrs('id'):
-            del tag.attr
-        for i, j in enumerate(tags):
-            tag.attrs['id'] = i
-            tag.attrs.append(('id', i))
-            TRY ON OF THESE
-                
-
-
-
-
-
-
-
-
-
-
-
-
-
-# IN PROGRESS
-# TO DO: summarize the meta info in xhtml files
+# Summarize the meta info in xhtml files
 # Use a multi-level dictionary?
-def get_meta_dml(dir, tags=[], encoding='utf8', features='lxml'):
+def get_meta(dir, tags=[], encoding='utf8', features='lxml'):
     """
     Wrapper to read meta content of document markup language (dml) file. 
 
@@ -225,27 +72,6 @@ def get_meta_dml(dir, tags=[], encoding='utf8', features='lxml'):
     return content
 
 
-def get_meta_dml_from_soup(soup:BeautifulSoup, tags=[]):
-    """
-    Make a dictionary of some relevant information stored in dml files.
-
-    Args:
-        soup (BeautifulSoup): document markup language in BeautifulSoup format
-        tags ([str]): list of tags of interest, e.g. tags=['title', 'language']
-    Returns:
-        content ({str:str}): a dictionary of tags and meta content stored in opf file
-    """
-    # extract and store meta tags
-    content = {}
-    if tags:
-        for tag in tags:
-            for item in soup.find_all(tag):
-                content.update({tag: item.contents[0]})
-    return content
-
-get_meta_dml_from_soup(soup)
-
-
 
 # IN PROGRESS
 def check_content(dir, encoding='utf8', features='lxml'):
@@ -265,6 +91,10 @@ def check_content(dir, encoding='utf8', features='lxml'):
         The <idx:entry> tag can carry the name, scriptable, and spell attributes. The name attribute indicates the index to which the headword belongs. The value of the name attribute should be the same as the default lookup index name listed in the OPF. The scriptable attribute makes the entry accessible from the index. The only possible value for the scriptable attribute is "yes". The spell attribute enables wildcard search and spell correction during word lookup. The only possible value for the spell attribute is "yes". 
     Checks:
         name, scriptable, spell
+    To do:
+        Check identifier X match in <package unique-identifier="X" and <dc:identifier id="X", as in below:
+        <package version="2.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="uid">
+        <dc:identifier id="uid">B00DZWFUG4-LookUp-mobi8</dc:identifier>
     """
     # set up the directory to content.opf
     dir = dir_handler(dir, mkdir=False)
@@ -290,6 +120,7 @@ def check_content(dir, encoding='utf8', features='lxml'):
                     lst.append(True)
                 else:
                     lst.append(False)
+
 
 
 
@@ -328,61 +159,51 @@ def check_toc(dir, encoding='utf8'):
 
 
 
-# IN PROGRESS
-def clean_anchors(xml):
-    """
-    Take an xml file and recode anchor locations.
-    Anchors with hyphens can cause errors. 
-    Modules: 
-    STEPS:
-    Make a list of every anchor in directory files. 
-    Make unique.
-    Make a list of replacement anchors.
-    Replace.
-    return xml
-    href="Text/part0004.xhtml#aid-3Q281"
-    """
-    soup.find_all('a')
 
-def convert_name_to_id(soup: bs4.BeautifulSoup) -> None:
+
+
+
+
+def make_anchor(soup: BeautifulSoup) -> BeautifulSoup:
+    """
+    Loop through every <h1>, <h2> tag and insert an id designed to guide navigation.
+
+    Convert elements such as
+        <h2 class="centrat2" id="aid-F8901">A</h2>
+    to
+        <h2 class="centrat2" id="nav001">A</h2>
+    """
+
+
+        
+
+
+
+
+# IN PROGRESS:
+def make_entry_id(soup: BeautifulSoup) -> BeautifulSoup:
+    """
+    Loop through the entire dictionary and create unique IDs for each dictionary entry.
+    """
+    # TO DO
+    tags = soup.find_all('idx:entry')
+    for tag in tags:
+        # if <idx:entry> has an id, suppress it:
+        for attr in tag.attrs('id'):
+            del tag.attr
+        for i, j in enumerate(tags):
+            tag.attrs['id'] = i
+            tag.attrs.append(('id', i))
+            # ETC
+
+def make_entry_id_from_name(soup: BeautifulSoup) -> BeautifulSoup:
+    # TO DO
     for anchor in soup.html.find_all('a'):
         if anchor.has_attr('name'):
             anchor['id'] = anchor['name']
             del anchor['name']
 
 
-
-def insert_pagebreak() -> str:
-    """Insert an <mbp:pagebreak> tag."""
-    print('<mbp:pagebreak/>')
-
-def insert_frameset() -> str:
-    """Insert an <mbp:frameset> tag."""
-    print('<mbp:frameset>')
-    <body>
-        <mbp:pagebreak/>
-        <mbp:frameset>    
-        </mbp:frameset>
-    </body>
-
-
-# <a id="filepos63413"/>
-
-
-# IN PROGRESS:
-def make_sections(soup: BeautifulSoup):
-    """
-    Inserts <mbp:section> tags at selected positions.
-    """
-    section_tag = soup.new_tag('<mbp:section>')
-
-# IN PROGRESS:
-def make_id(text):
-    """
-    Loop through the entire dictionary and create unique IDs for each dictionary entry.
-    """
-    # TO DO
-    return text
 
 # IN PROGRESS:
 def make_kindle():

@@ -2,15 +2,15 @@
 Get a list of duplicated IDs in a dynamic markup document.
 
 >>> from GDLC.GDLC import *
->>> dml = '''
+>>> dml = '''\
 ... <?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml">
 ... <head>
-... <title>TITLE</title>
+...   <title>TITLE</title>
 ... </head>
 ... <body>
-... <blockquote class="calibre27" id="d12345"><p>First occurrence of id="d12345"</p></blockquote>
-... <blockquote class="calibre27" id="d67890"><p>A single occurrence of id="d67890"</p></blockquote>
-... <blockquote class="calibre27" id="d12345"><p>Second occurrence of id="d12345"</p></blockquote>
+...   <blockquote class="calibre27" id="d12345"><p>First occurrence of id="d12345"</p></blockquote>
+...   <blockquote class="calibre27" id="d67890"><p>A single occurrence of id="d67890"</p></blockquote>
+...   <blockquote class="calibre27" id="d12345"><p>Second occurrence of id="d12345"</p></blockquote>
 ... </body>
 ... </html>
 ... '''
