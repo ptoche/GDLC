@@ -64,7 +64,6 @@ def get_meta(dir, tags=[], encoding='utf8', features='lxml'):
         tags = {'idx:entry': ['name', 'scriptable', 'spell'],
                 'idx:orth': []}
 
-
     # get attributes from the opf file:
     with open(file, encoding=encoding) as infile:
         soup = BeautifulSoup(infile, features=features)
@@ -72,6 +71,39 @@ def get_meta(dir, tags=[], encoding='utf8', features='lxml'):
     return content
 
 
+def set_metadata_language(dir):
+    """
+    Set the language code in the metadata <dc:language> tag by going recursively over every metadata.opf file in the Calibre library.
+
+    Some Catalan ebooks have the language metadata incorrectly coded as:
+
+        <dc:language>cat</dc:language>
+    
+    in the content.opf file. This is changed to
+
+        <dc:language>ca</dc:language>
+
+    and the calibre "polish books" plugin is then run on Catalan language books exclusively (by filtering by language) with "update metadata in the book file".
+    """
+    from pathlib import Path
+    import fileinput
+    # origin/destination strings:
+    s0 = '<dc:language>cat</dc:language>' 
+    s1 = '<dc:language>ca</dc:language>'
+    # list all the candidate files in the Calibre library:
+    extension = '.opf'
+    files = Path(dir).rglob(f'*{extension}')
+    # read each file and search for matching string, then replace in-place:
+    r, i = [], 0
+    for file in files:
+        for line in fileinput.input(file, inplace=True):
+            if line.find(s0):
+                r.append(str(file))
+                i += 1
+                #line.replace(s0, s1)
+    print(f'{i} replacements were made!')
+    print('The following files were modified:\n', r)
+    return r
 
 # IN PROGRESS
 def check_content(dir, encoding='utf8', features='lxml'):
@@ -162,39 +194,35 @@ def check_toc(dir, encoding='utf8'):
 
 
 
-
-
-def make_anchor(soup: BeautifulSoup) -> BeautifulSoup:
+# IN PROGRESS
+def make_anchor(soup: BeautifulSoup, tags=[]) -> BeautifulSoup:
     """
-    Loop through every <h1>, <h2> tag and insert an id designed to guide navigation.
-
-    Convert elements such as
-        <h2 class="centrat2" id="aid-F8901">A</h2>
-    to
-        <h2 class="centrat2" id="nav001">A</h2>
+    Loop through selected tags and create unique IDs for each.
     """
-
-
-        
-
-
-
-
-# IN PROGRESS:
-def make_entry_id(soup: BeautifulSoup) -> BeautifulSoup:
-    """
-    Loop through the entire dictionary and create unique IDs for each dictionary entry.
-    """
-    # TO DO
-    tags = soup.find_all('idx:entry')
+    if not tags:
+        print('Aborting. You must specify a list of tags in which to place the anchor.')
+        return soup
     for tag in tags:
-        # if <idx:entry> has an id, suppress it:
-        for attr in tag.attrs('id'):
-            del tag.attr
+        for item in soup.find_all(tag):
+            if item.has_attr('id'):
+                print('1: has id')
+                if not item['id'].strip():
+                    print('2: has empty id')
+                    del item['id']
+                else:
+                    id = str(item['id'])
+                    print('3: Skipping. Found tag with id attribute', id)
+                    pass
         for i, j in enumerate(tags):
-            tag.attrs['id'] = i
-            tag.attrs.append(('id', i))
-            # ETC
+            print('i = ', i)
+            print('j = ', j)
+            item.attrs['id'] = i+1
+    return soup
+
+soup = BeautifulSoup(dml, features='lxml')
+print(make_anchor(soup, tags=['blockquote']))
+
+
 
 def make_entry_id_from_name(soup: BeautifulSoup) -> BeautifulSoup:
     # TO DO

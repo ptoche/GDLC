@@ -13,6 +13,7 @@ Strip anchor id and href while keeping content.
 ...     <blockquote align="left" id="id1234"><span>Definition here.</span></blockquote>
 ...     <blockquote align="left"><span>More details here.</span></blockquote>
 ...     <blockquote align="left"><span>More details and an <a class="calibre17" href="part0001.xhtml#id0001">anchor</a>.</span></blockquote>
+...   </div>
 ... </body>'''
 
 Strip the anchor in id:
@@ -28,7 +29,8 @@ Strip the anchor in id:
 <blockquote align="left"><span>Definition here.</span></blockquote>
 <blockquote align="left"><span>More details here.</span></blockquote>
 <blockquote align="left"><span>More details and an <a class="calibre17" href="part0001.xhtml#id0001">anchor</a>.</span></blockquote>
-</div></body>
+</div>
+</body>
 
 Strip the anchor in href:
 >>> soup = BeautifulSoup(dml, features='lxml')
@@ -43,7 +45,8 @@ Strip the anchor in href:
 <blockquote align="left" id="id1234"><span>Definition here.</span></blockquote>
 <blockquote align="left"><span>More details here.</span></blockquote>
 <blockquote align="left"><span>More details and an anchor.</span></blockquote>
-</div></body>
+</div>
+</body>
 
 Strip the anchor in both id and href:
 >>> soup = BeautifulSoup(dml, features='lxml')
@@ -58,6 +61,7 @@ Strip the anchor in both id and href:
 <blockquote align="left"><span>Definition here.</span></blockquote>
 <blockquote align="left"><span>More details here.</span></blockquote>
 <blockquote align="left"><span>More details and an anchor.</span></blockquote>
-</div></body>
+</div>
+</body>
 
 """

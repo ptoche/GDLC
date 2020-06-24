@@ -1,2 +1,0 @@
-Text enclosed in single backquotes is recognized as "interpreted text", whose interpretation is application-dependent. In the context of a Python docstring, the default interpretation of interpreted text is as Python identifiers. The text will be marked up with a hyperlink connected to the documentation for the identifier given. Lookup rules are the same as in Python itself: LGB namespace lookups (local, global, builtin). The "role" of the interpreted text (identifying a class, module, function, etc.) is determined implicitly from the namespace lookup.
-
