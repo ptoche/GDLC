@@ -2,7 +2,7 @@
 
 MAY-June 2020: WORK IN PROGRESS. 
 
-The code has not been optimized. Most of it was written over two days without prior thoughts, refactored for another two days, polished a little in my spare time since. Much of the code does little more than help debug a few key functions used to create look-up references. 
+The code has not been optimized. Most of it was written over two days without prior thoughts, refactored for another two days, polished a little in my spare time since. Much of the code does little more than help debug a few key functions used to create look-up references. Project interrupted in early July 2020. A dictionary was produced with Kindle Previewer (free Amazon software). It was successfully tested on a few words. Then real life took over. I hope to come back to this project, but unless we get another covid lockdown, I'm not sure I will find the time.
 
 ## Overview
 
@@ -25,6 +25,7 @@ Python code to edit an ebook dictionary into a Kindle lookup dictionary that may
 You must be able to run Python 3 code and the BeautifulSoup library. As the files to be processed are large and the content proprietary, online emulators may not be the appropriate tool. You must have a copy of the dictionary. A free sample may be found inside the GDLC directory. 
 
 Python: Make sure you have the appropriate parser libraries installed, e.g. the lxml parser. Examples:
+
     pip install lxml          # general purpose package manager 
     brew install html.parser  # popular for MacOS
     conda install html5lib    # Anaconda environment manager
