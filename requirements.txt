@@ -1,3 +1,5 @@
-BeautifulSoup
-logging
+bs4
 doctest
+logging
+time
+traceback

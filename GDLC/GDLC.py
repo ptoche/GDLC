@@ -1503,6 +1503,8 @@ def strip_spaces_from_string(html):
     return html
 
 
+
+
 def strip_squares(soup:BeautifulSoup):
     """
     Remove special character '■' and associated tag from a dictionary definition. 

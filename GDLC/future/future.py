@@ -11,9 +11,7 @@ The behavior of a decomposed Tag or NavigableString is not defined and you shoul
 
 To Do:
     * Check code for parsers other than lxml
-    * Check if all definitions are in blockquote with class calibre27
     * Check case of missing or malformed tags, e.g. with missing word or line-ending slash
-    * Test spacing near punctuation marks: eliminate instances of ' .' and ' ,'
     * Make the following functions:
     * get_word_class(): verb, noun, etc.
     * get_word_inflection(): tall, taller, tallest
@@ -240,3 +238,32 @@ def make_kindle():
 
     /Users/patricktoche/kindlegen/KindleGen_Mac_i386_v2_9/kindlegen 
     """ 
+
+
+# IN PROGRESS:
+
+def strip_spacing_from_soup(soup: BeautifulSoup, strip=False, verbose=None) -> BeautifulSoup:
+    """
+    Strip excess white spaces near punctuation marks, e.g. fix ' .' and ' ,'
+
+    Args:
+        soup (BeautifulSoup, Tag, NavigableString): any soup
+    Returns:
+        soup (BeautifulSoup, Tag, NavigableString): with excess white spaces stripped out
+    Modules: 
+        bs4 (BeautifulSoup), re
+    """
+    if verbose is None:
+        if not strip:
+            verbose=True
+    _punctuation_spaces = re.compile(r'\s([?.!,;"](?:\s|$))')
+    for item in soup.find_all():
+        if item.string:
+            s = re.search(_punctuation_spaces, item.string)
+            if s:
+                if verbose:
+                    print(s)
+                if strip:
+                    item.string.replace_with(re.sub(_punctuation_spaces,  r'\1', item.string))
+    return soup
+    
