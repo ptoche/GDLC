@@ -236,7 +236,7 @@ def make_kindle():
     """ 
     Invoke kindlegen to build ebook from files.
 
-    /Users/patricktoche/kindlegen/KindleGen_Mac_i386_v2_9/kindlegen 
+    /Users/patrick/kindlegen/KindleGen_Mac_i386_v2_9/kindlegen 
     """ 
 
 

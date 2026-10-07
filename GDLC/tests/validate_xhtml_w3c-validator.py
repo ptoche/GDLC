@@ -19,7 +19,7 @@ with open(file, encoding='utf8') as infile:
 #   File "<ipython-input-24-3004e5ab8683>", line 3, in <module>
 #     messages = validate(infile)["messages"]
 
-#   File "/Users/patricktoche/miniconda3/envs/sp/lib/python3.8/site-packages/w3c_validator/validator.py", line 41, in validate
+#   File "/Users/patrick/miniconda3/envs/sp/lib/python3.8/site-packages/w3c_validator/validator.py", line 41, in validate
 #     is_remote = filename.startswith("http://") or filename.startswith(
 
 # AttributeError: '_io.TextIOWrapper' object has no attribute 'startswith'
